@@ -129,18 +129,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const skipTrial = profileUsedTrial || historicalAuthorized
 
-  // Assemble the preapproval body. Two shapes:
-  //   - First-time subscribers: pass preapproval_plan_id, MP inherits amount,
-  //     frequency, free_trial, back_url from the plan config in MP dashboard.
-  //   - Re-subscribers (skipTrial): fetch the plan from MP, strip free_trial,
-  //     send auto_recurring inline. MP refuses `preapproval_plan_id` and
-  //     `auto_recurring` in the same request, so we pick one.
+  // Assemble the preapproval body. We ALWAYS build `auto_recurring` inline
+  // (never pass `preapproval_plan_id`) for two reasons:
+  //   1. We need to set `start_date = now` so the first cobro happens at
+  //      signup (SaaS billing), not on the calendar day configured in the
+  //      plan template (e.g. "Día 1" of the month). MP refuses
+  //      `preapproval_plan_id` + `auto_recurring` in the same request, so we
+  //      can't keep the plan_id shortcut while overriding start_date.
+  //   2. The plan template still acts as the source of truth for amount,
+  //      frequency, and (for first-timers) free_trial — we fetch it from MP.
   interface PreapprovalCreateBody {
     card_token_id: string
     payer_email: string
     external_reference: string
     status: 'authorized'
-    preapproval_plan_id?: string
+    reason?: string
+    back_url?: string
+    auto_recurring: {
+      frequency: number
+      frequency_type: string
+      transaction_amount: number
+      currency_id: string
+      start_date: string
+      free_trial?: { frequency: number; frequency_type: string }
+    }
+  }
+
+  // Pull plan config so pricing/frequency stays in sync with the MP dashboard.
+  const planRes = await fetch(
+    `https://api.mercadopago.com/preapproval_plan/${mpPlanId}`,
+    { headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` } },
+  )
+  if (!planRes.ok) {
+    console.error('MP plan fetch failed', planRes.status, await planRes.text())
+    return res.status(502).json({ error: 'plan_fetch_failed' })
+  }
+  const planData = (await planRes.json()) as {
     reason?: string
     back_url?: string
     auto_recurring?: {
@@ -148,51 +172,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       frequency_type: string
       transaction_amount: number
       currency_id: string
-      // Intentionally no free_trial — that's the point.
+      free_trial?: { frequency: number; frequency_type: string }
     }
   }
+  if (!planData.auto_recurring) {
+    return res.status(502).json({ error: 'plan_malformed' })
+  }
+
+  // Charge immediately on signup. 10s buffer dodges MP's "start_date is in
+  // the past" edge case where they roll the first charge to next cycle.
+  const startDate = new Date(Date.now() + 10_000).toISOString()
+
   const createBody: PreapprovalCreateBody = {
     card_token_id: cardToken,
     payer_email: payerEmail,
     external_reference: userId!,
     status: 'authorized',
-  }
-
-  if (skipTrial) {
-    // Pull plan config so pricing stays in sync with the MP dashboard —
-    // no hardcoded numbers to drift.
-    const planRes = await fetch(
-      `https://api.mercadopago.com/preapproval_plan/${mpPlanId}`,
-      { headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` } },
-    )
-    if (!planRes.ok) {
-      console.error('MP plan fetch failed', planRes.status, await planRes.text())
-      return res.status(502).json({ error: 'plan_fetch_failed' })
-    }
-    const planData = (await planRes.json()) as {
-      reason?: string
-      back_url?: string
-      auto_recurring?: {
-        frequency: number
-        frequency_type: string
-        transaction_amount: number
-        currency_id: string
-      }
-    }
-    if (!planData.auto_recurring) {
-      return res.status(502).json({ error: 'plan_malformed' })
-    }
-    createBody.reason = planData.reason || `MediBot ${planId === 'clinic' ? 'Clinic' : 'Pro'}`
-    createBody.back_url = planData.back_url
-    createBody.auto_recurring = {
+    reason: planData.reason || `MediBot ${planId === 'clinic' ? 'Clinic' : 'Pro'}`,
+    back_url: planData.back_url,
+    auto_recurring: {
       frequency: planData.auto_recurring.frequency,
       frequency_type: planData.auto_recurring.frequency_type,
       transaction_amount: planData.auto_recurring.transaction_amount,
       currency_id: planData.auto_recurring.currency_id,
-    }
+      start_date: startDate,
+    },
+  }
+
+  // Free trial only for first-timers (and only if the plan template has one).
+  // skipTrial users (already consumed a trial) get charged immediately.
+  if (!skipTrial && planData.auto_recurring.free_trial) {
+    createBody.auto_recurring.free_trial = planData.auto_recurring.free_trial
+  }
+
+  if (skipTrial) {
     console.log(`reactivation (no trial) for user ${userId}, plan ${planId}`)
-  } else {
-    createBody.preapproval_plan_id = mpPlanId
   }
 
   const mpRes = await fetch('https://api.mercadopago.com/preapproval', {

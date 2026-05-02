@@ -9,7 +9,7 @@
   "rewrites": [
     { "source": "/ics/:code.ics", "destination": "https://wyrpnsszzlzhvhxtwlzg.supabase.co/functions/v1/ics-feed/:code.ics" },
     { "source": "/ics/:code", "destination": "https://wyrpnsszzlzhvhxtwlzg.supabase.co/functions/v1/ics-feed/:code" },
-    { "source": "/((?!p/|api/|assets/|ics/|og-default|favicon|apple-touch-icon|icon-|manifest|robots|sitemap|404|privacy).*)", "destination": "/index.html" }
+    { "source": "/((?!p/|api/|assets/|ics/|src/|node_modules/|@vite/|@id/|@fs/|@react-refresh|\\.vite/|og-default|favicon|apple-touch-icon|icon-|manifest|robots|sitemap|404|privacy).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
