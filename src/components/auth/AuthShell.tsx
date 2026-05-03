@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import Logo from '../Logo'
 
 /**
  * Clinical Calm auth shell — editorial sage-left panel + form-right panel.
@@ -11,14 +12,9 @@ export default function AuthShell({ children }: { children: ReactNode }) {
       <div
         className="md:w-[44%] md:min-h-screen bg-primary text-surface px-10 md:px-14 py-10 md:py-12 flex flex-col justify-between gap-10"
       >
-        {/* Wordmark */}
-        <div className="flex items-baseline gap-2.5">
-          <div
-            className="text-[28px] italic tracking-[-0.02em]"
-            style={{ fontFamily: 'var(--font-serif)' }}
-          >
-            Tecito
-          </div>
+        {/* Wordmark — inverse variant: sits on the dark sage panel */}
+        <div className="flex items-baseline gap-3">
+          <Logo variant="full" size={32} inverse className="text-surface" />
           <div
             className="text-[11px] opacity-55 uppercase tracking-[0.12em]"
             style={{ fontFamily: 'var(--font-mono)' }}

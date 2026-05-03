@@ -20,6 +20,7 @@ import { canAddPatient, canCreateOrg, canCustomBranding, PLANS, type PlanId } fr
 import LoginView from './components/auth/LoginView'
 import RegisterView from './components/auth/RegisterView'
 import LandingView from './components/landing/LandingView'
+import Logo from './components/Logo'
 import OrgAdminView from './components/org/OrgAdminView'
 import JoinOrgView from './components/org/JoinOrgView'
 import CreateOrgModal from './components/org/CreateOrgModal'
@@ -190,9 +191,9 @@ export default function App() {
   if (authScreen === 'loading') {
     return (
       <div className="min-h-screen bg-gray-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-2xl font-semibold text-primary mb-2" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}>Tecito</div>
-          <div className="text-sm text-text-hint">Cargando...</div>
+        <div className="flex flex-col items-center gap-3">
+          <Logo variant="mark" size={48} />
+          <div className="text-sm text-text-hint">Cargando…</div>
         </div>
       </div>
     )

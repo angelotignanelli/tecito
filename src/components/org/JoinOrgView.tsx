@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import Logo from '../Logo'
 
 interface Props {
   inviteCode: string
@@ -39,9 +40,9 @@ export default function JoinOrgView({ inviteCode, onJoined, onSkip }: Props) {
   return (
     <div className="min-h-screen bg-gray-bg flex items-center justify-center p-4">
       <div className="w-full max-w-[420px]">
-        <div className="text-center mb-8">
-          <div className="text-2xl font-semibold text-primary mb-1">Tecito</div>
-          <div className="text-sm text-text-hint">Panel profesional</div>
+        <div className="flex flex-col items-center mb-8">
+          <Logo variant="full" size={32} />
+          <div className="text-sm text-text-hint mt-2">Panel profesional</div>
         </div>
 
         <div className="bg-white border border-gray-border rounded-[10px] p-6 text-center">

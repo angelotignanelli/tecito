@@ -10,6 +10,7 @@ import {
 } from '../../lib/publicBooking'
 import BookingModal from './BookingModal'
 import Icon from '../Icon'
+import Logo from '../Logo'
 
 interface Props {
   bookingCode: string
@@ -178,13 +179,9 @@ export default function PublicBookingPage({ bookingCode }: Props) {
       {/* Header */}
       <header className="bg-surface border-b border-gray-border shrink-0" role="banner">
         <div className="px-6 lg:px-10 py-3.5 flex items-center justify-between">
-          <div className="flex items-baseline gap-3">
-            <a
-              href="/"
-              className="text-[16px] italic text-text font-medium cursor-pointer"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              Tecito
+          <div className="flex items-center gap-3">
+            <a href="/" className="cursor-pointer" aria-label="Volver a Tecito">
+              <Logo variant="full" size={22} />
             </a>
             <div
               className="hidden sm:block text-[11px] text-text-hint"

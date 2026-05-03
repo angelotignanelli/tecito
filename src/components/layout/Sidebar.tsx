@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { Organization } from '../../lib/hooks'
 import { PLANS, type PlanId } from '../../lib/plans'
 import Icon from '../Icon'
+import Logo from '../Logo'
 
 export type View = 'agenda' | 'pacientes' | 'bloqueos' | 'estadisticas' | 'config' | 'perfil' | 'organizacion'
 
@@ -184,9 +185,7 @@ export default function Sidebar({ activeView, onNavigate, agendaBadge, onLogout,
         {currentOrg?.logo_url ? (
           <img src={currentOrg.logo_url} alt={currentOrg.name} className="h-6 max-w-[120px] object-contain" />
         ) : (
-          <div className="text-[16px] italic text-primary" style={{ fontFamily: 'var(--font-serif)' }}>
-            Tecito
-          </div>
+          <Logo variant="full" size={22} />
         )}
         <div className="mt-[3px] flex items-center gap-1.5 flex-wrap">
           <PlanPill plan={currentPlan} status={planStatus} />

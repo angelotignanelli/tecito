@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createBooking, type PublicDoctor, type PublicLocation } from '../../lib/publicBooking'
 import Icon from '../Icon'
+import Logo from '../Logo'
 
 interface Props {
   doctor: PublicDoctor
@@ -167,13 +168,8 @@ export default function BookingModal({ doctor, slot, location, onClose, onSucces
           >
             <Icon name="chevL" size={14} />
           </button>
-          <div className="text-center">
-            <div
-              className="text-[15px] italic font-medium text-text leading-[1.1]"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              Tecito
-            </div>
+          <div className="flex flex-col items-center">
+            <Logo variant="full" size={22} />
             <div
               className="text-[9px] text-text-hint uppercase tracking-[0.14em] mt-0.5"
               style={{ fontFamily: 'var(--font-mono)' }}

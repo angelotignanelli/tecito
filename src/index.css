@@ -128,17 +128,40 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 /* MercadoPago Card Payment Brick — collapse trailing whitespace.
    The Brick reserves vertical space for an installments selector and
-   a payment summary even when maxInstallments=1 hides them, leaving
-   ~150px of dead space below the Pagar button. We hide:
-   - any direct child div of the brick wrapper that doesn't contain
-     a form input/select/button (i.e. has no actionable UI)
-   - everything after the submit button at any nesting level
-   Targeted enough to not break the form, broad enough to catch
-   whichever empty container MP renders between releases. */
-#mp-card-payment-brick > div:not(:has(input)):not(:has(select)):not(:has(button)) {
+   payment summary even when maxInstallments=1 hides them. Without
+   knowing MP's exact internal class names (which change between SDK
+   releases), we cast a wide net and stack several rules. */
+
+/* 1) Hide any direct child of the brick that holds no actionable UI. */
+#mp-card-payment-brick > *:not(:has(input)):not(:has(select)):not(:has(button)) {
   display: none !important;
 }
+
+/* 2) Zero out trailing padding/margin on the brick wrapper and its
+   direct children so internal spacing doesn't leak below the form. */
+#mp-card-payment-brick,
+#mp-card-payment-brick > *,
+#mp-card-payment-brick > * > *:last-child {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* 3) Hide everything after the submit button at any sibling level. */
 #mp-card-payment-brick button[type="submit"] ~ *,
 #mp-card-payment-brick *:has(> button[type="submit"]) ~ * {
+  display: none !important;
+}
+
+/* 4) Belt-and-suspenders: target installments-related wrappers by
+   common MP naming patterns (data-testid + class fragment). MP changes
+   these between releases so we pattern-match liberally. */
+#mp-card-payment-brick [class*="installment" i],
+#mp-card-payment-brick [data-testid*="installment" i],
+#mp-card-payment-brick [class*="summary" i] {
+  display: none !important;
+}
+
+/* 5) Last-resort: kill a trailing wrapper that holds no submit button. */
+#mp-card-payment-brick > *:last-child:not(:has(button[type="submit"])) {
   display: none !important;
 }
