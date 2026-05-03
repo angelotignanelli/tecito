@@ -161,6 +161,32 @@ export default function App() {
     setAuthScreen('app')
   }
 
+  // Trap the browser back button while the user is inside the dashboard.
+  //
+  // The dashboard's internal navigation (agenda, patients, plans, profile,
+  // …) is purely React state — none of it pushes its own history entry.
+  // That means a back press from any view inside the dashboard pops the
+  // most recent BROWSER history entry, which after a Google OAuth login
+  // is `accounts.google.com/...`. So users tapping back from "Planes"
+  // were getting bounced to Google's account chooser. Confusing.
+  //
+  // Fix: every time the user navigates back while inside the dashboard,
+  // push a sentinel back onto the stack so they stay at `/`. To exit the
+  // app they use the logout button. We also push one sentinel up front
+  // so the very first back press is absorbed.
+  //
+  // We listen only while authScreen === 'app' so it doesn't interfere
+  // with auth flows or the public booking page.
+  useEffect(() => {
+    if (authScreen !== 'app') return
+    window.history.pushState({ inApp: true }, '', '/')
+    const trap = () => {
+      window.history.pushState({ inApp: true }, '', '/')
+    }
+    window.addEventListener('popstate', trap)
+    return () => window.removeEventListener('popstate', trap)
+  }, [authScreen])
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     window.history.pushState({}, '', '/')

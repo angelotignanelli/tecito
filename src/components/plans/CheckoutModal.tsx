@@ -186,8 +186,14 @@ export default function CheckoutModal({
           </div>
         </div>
 
-        {/* Brick container */}
-        <div className="px-6 py-5">
+        {/* Brick container.
+            The MP Card Payment Brick reserves vertical space for an
+            installments selector even when maxInstallments=1 hides it,
+            leaving a ~150px gap below the Pagar button. We collapse any
+            empty divs the brick injects with the [&_div:empty]:hidden
+            arbitrary variant, and trim our own padding so the trust
+            footer sits flush against the form. */}
+        <div className="px-6 pt-5 pb-2 [&_div:empty]:hidden">
           {status === 'loading' && (
             <div className="text-center text-[13px] text-text-muted py-10">
               Cargando formulario de pago…
@@ -207,7 +213,7 @@ export default function CheckoutModal({
         </div>
 
         {/* Footer — trust signals */}
-        <div className="px-6 pb-5 flex items-center gap-2 text-[11px] text-text-hint">
+        <div className="px-6 pb-5 pt-1 flex items-center gap-2 text-[11px] text-text-hint">
           <Icon name="lock" size={12} />
           <span>Procesado por MercadoPago. No guardamos los datos de tu tarjeta.</span>
         </div>
