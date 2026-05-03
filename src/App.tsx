@@ -98,6 +98,22 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // After any successful auth transition (login → app/onboarding, register
+  // → login, etc.) we collapse the URL back to `/`. Without this the URL
+  // lingers at `/login` or `/register` even after the user is fully inside
+  // the dashboard, which means: (a) back button takes them to the auth
+  // screen instead of the landing, and (b) if Supabase refreshes the token
+  // and momentarily sees no session, our unauthScreenForPath() reads the
+  // stale auth URL and pops up LoginView in the middle of their session.
+  // replaceState (not pushState) — we want to overwrite the auth entry,
+  // not push a new one.
+  const collapseUrlToRoot = () => {
+    const path = window.location.pathname
+    if (path === '/login' || path === '/register') {
+      window.history.replaceState({}, '', '/')
+    }
+  }
+
   const loadProfile = async (userId: string) => {
     const { data: profile } = await supabase
       .from('profiles')
@@ -109,17 +125,21 @@ export default function App() {
       setUserFirstName(profile.first_name || '')
       setUserLastName(profile.last_name || '')
       if (profile.needs_onboarding) {
+        collapseUrlToRoot()
         setAuthScreen('onboarding')
       } else {
         const invite = localStorage.getItem('pending_invite')
         if (invite) {
           setPendingInvite(invite)
+          collapseUrlToRoot()
           setAuthScreen('join-org')
         } else {
+          collapseUrlToRoot()
           setAuthScreen('app')
         }
       }
     } else {
+      collapseUrlToRoot()
       setAuthScreen('onboarding')
     }
   }
@@ -130,6 +150,10 @@ export default function App() {
   }
 
   const handleRegisterSuccess = () => {
+    // After register, we drop into the login screen (so the user explicitly
+    // logs in with the password they just set). Replace the URL too so
+    // /register doesn't linger.
+    window.history.replaceState({}, '', '/login')
     setAuthScreen('login')
   }
 
