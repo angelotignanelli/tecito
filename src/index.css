@@ -125,3 +125,20 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .animate-pulse-dot {
   animation: pulse-dot 1s ease-in-out infinite both;
 }
+
+/* MercadoPago Card Payment Brick — collapse trailing whitespace.
+   The Brick reserves vertical space for an installments selector and
+   a payment summary even when maxInstallments=1 hides them, leaving
+   ~150px of dead space below the Pagar button. We hide:
+   - any direct child div of the brick wrapper that doesn't contain
+     a form input/select/button (i.e. has no actionable UI)
+   - everything after the submit button at any nesting level
+   Targeted enough to not break the form, broad enough to catch
+   whichever empty container MP renders between releases. */
+#mp-card-payment-brick > div:not(:has(input)):not(:has(select)):not(:has(button)) {
+  display: none !important;
+}
+#mp-card-payment-brick button[type="submit"] ~ *,
+#mp-card-payment-brick *:has(> button[type="submit"]) ~ * {
+  display: none !important;
+}
