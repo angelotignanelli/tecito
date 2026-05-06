@@ -69,6 +69,23 @@ export default function App() {
       window.history.replaceState({}, '', window.location.pathname)
     }
 
+    // SAFETY NET for password recovery:
+    // When the user clicks the recovery link from their email, Supabase
+    // redirects back to the site with `#access_token=...&type=recovery` in
+    // the URL hash. Supabase-js then auto-fires the PASSWORD_RECOVERY auth
+    // event — but if our `onAuthStateChange` listener attaches *after* that
+    // event fires, we miss it and route the user to the dashboard / landing
+    // instead. Parsing the hash ourselves on mount avoids that race
+    // entirely. Also handles the case where the hash format changes between
+    // supabase-js versions.
+    const isRecovery =
+      /[#&?]type=recovery(\b|&)/.test(window.location.hash) ||
+      /[#&?]type=recovery(\b|&)/.test(window.location.search)
+    if (isRecovery) {
+      setAuthScreen('reset-password')
+      return
+    }
+
     // For unauthenticated users: /login → LoginView, /register → RegisterView,
     // anything else (including /) → marketing landing. We let /login and
     // /register persist in the URL during dev too, so a refresh lands you
