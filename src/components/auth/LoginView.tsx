@@ -12,6 +12,13 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  // Default: remember (most users want this). Persist the *preference* in
+  // localStorage so the checkbox remembers its own state next visit.
+  const [rememberMe, setRememberMe] = useState(() => {
+    return typeof window !== 'undefined'
+      ? localStorage.getItem('tecito_remember_me') !== 'false'
+      : true
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,16 +36,24 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
         : error.message)
       return
     }
-    onLoginSuccess()
-  }
 
-  const handleGoogle = async () => {
-    setError('')
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
-    })
-    if (error) setError(error.message)
+    // Persist the checkbox preference for next visit
+    localStorage.setItem('tecito_remember_me', String(rememberMe))
+
+    // If user does NOT want to be remembered, wipe Supabase auth tokens from
+    // localStorage when the tab closes. sessionStorage would also be wiped, but
+    // Supabase reads from localStorage by default so we purge those keys.
+    // The handler is registered at window-level so it survives this component
+    // unmounting after successful login.
+    if (!rememberMe) {
+      window.addEventListener('beforeunload', () => {
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith('sb-'))
+          .forEach((k) => localStorage.removeItem(k))
+      })
+    }
+
+    onLoginSuccess()
   }
 
   return (
@@ -51,24 +66,6 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
           Iniciar sesión.
         </h1>
         <p className="text-[13px] text-text-muted mt-2">Bienvenida de nuevo.</p>
-      </div>
-
-      <button
-        type="button"
-        onClick={handleGoogle}
-        className="w-full px-3.5 py-[11px] rounded-[10px] border border-gray-border-2 bg-surface text-[13px] font-medium text-text flex items-center justify-center gap-2.5 cursor-pointer hover:bg-surface-2 transition-colors"
-      >
-        <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10 10 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.71v2.26h2.92a8.8 8.8 0 0 0 2.68-6.61z"/><path fill="#34A853" d="M9 18a8.58 8.58 0 0 0 5.96-2.18l-2.92-2.26a5.44 5.44 0 0 1-8.07-2.85H.92v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.71A5.4 5.4 0 0 1 3.68 9a5.4 5.4 0 0 1 .29-1.71V4.96H.92a9 9 0 0 0 0 8.08l3.05-2.33z"/><path fill="#EA4335" d="M9 3.58a4.9 4.9 0 0 1 3.46 1.35l2.58-2.58A8.64 8.64 0 0 0 9 0 9 9 0 0 0 .92 4.96l3.05 2.33A5.36 5.36 0 0 1 9 3.58z"/></svg>
-        Continuar con Google
-      </button>
-
-      <div
-        className="flex items-center gap-3 my-5 text-text-hint text-[11px] uppercase tracking-[0.12em]"
-        style={{ fontFamily: 'var(--font-mono)' }}
-      >
-        <div className="flex-1 h-px bg-gray-border" />
-        <span>o con email</span>
-        <div className="flex-1 h-px bg-gray-border" />
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -101,6 +98,18 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
             className="w-full px-3.5 py-[11px] rounded-[10px] border border-gray-border-2 bg-surface text-[14px] text-text focus:border-primary-mid"
           />
         </div>
+
+        <label className="flex items-center gap-2 mb-5 cursor-pointer select-none group">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-border-2 text-primary focus:ring-primary-mid focus:ring-1 cursor-pointer accent-primary"
+          />
+          <span className="text-[12px] text-text-muted group-hover:text-text transition-colors">
+            Recordarme en este dispositivo
+          </span>
+        </label>
 
         {error && (
           <div className="text-[12px] text-coral mb-4 bg-coral-light rounded-[8px] px-3 py-2">{error}</div>
