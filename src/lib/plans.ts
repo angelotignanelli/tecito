@@ -55,7 +55,7 @@ export const PLANS: Record<PlanId, Plan> = {
   pro: {
     id: 'pro',
     name: 'Pro',
-    price: 18000,
+    price: 35000,
     description: 'Para profesionales independientes.',
     highlighted: true,
     features: [
@@ -76,7 +76,7 @@ export const PLANS: Record<PlanId, Plan> = {
   clinic: {
     id: 'clinic',
     name: 'Clinic',
-    price: 45000,
+    price: 90000,
     description: 'Para consultorios y clínicas.',
     features: [
       'Todo lo de Pro',
