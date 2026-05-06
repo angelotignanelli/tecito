@@ -19,6 +19,7 @@ import PaywallModal from './components/plans/PaywallModal'
 import { canAddPatient, canCreateOrg, canCustomBranding, PLANS, type PlanId } from './lib/plans'
 import LoginView from './components/auth/LoginView'
 import RegisterView from './components/auth/RegisterView'
+import ResetPasswordView from './components/auth/ResetPasswordView'
 import LandingView from './components/landing/LandingView'
 import Logo from './components/Logo'
 import OrgAdminView from './components/org/OrgAdminView'
@@ -33,7 +34,7 @@ import PageHeader from './components/PageHeader'
 import NewAppointmentModal from './components/agenda/NewAppointmentModal'
 import RemindersModal from './components/agenda/RemindersModal'
 
-type AuthScreen = 'loading' | 'landing' | 'login' | 'register' | 'onboarding' | 'join-org' | 'app' | 'public-booking' | 'not-found'
+type AuthScreen = 'loading' | 'landing' | 'login' | 'register' | 'reset-password' | 'onboarding' | 'join-org' | 'app' | 'public-booking' | 'not-found'
 type AgendaMode = 'week' | 'month'
 
 export default function App() {
@@ -87,8 +88,16 @@ export default function App() {
       }
     })
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth changes. Special case: PASSWORD_RECOVERY fires when the
+    // user clicks the recovery link from their email and Supabase puts them
+    // in a temporary recovery session. We MUST intercept this *before* the
+    // generic `if (session)` branch — otherwise we'd auto-route them into the
+    // dashboard and they'd never get the chance to set a new password.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setAuthScreen('reset-password')
+        return
+      }
       if (session) {
         loadProfile(session.user.id)
       } else {
@@ -209,6 +218,19 @@ export default function App() {
 
   if (authScreen === 'register') {
     return <RegisterView onRegisterSuccess={handleRegisterSuccess} onGoToLogin={goToLogin} />
+  }
+
+  if (authScreen === 'reset-password') {
+    return (
+      <ResetPasswordView
+        onResetComplete={() => {
+          // After saving a new password we sign out (in ResetPasswordView).
+          // Send the user to /login fresh so they re-authenticate.
+          window.history.replaceState({}, '', '/login')
+          setAuthScreen('login')
+        }}
+      />
+    )
   }
 
   if (authScreen === 'onboarding') {

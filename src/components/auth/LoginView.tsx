@@ -11,7 +11,9 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [loading, setLoading] = useState(false)
+  const [forgotLoading, setForgotLoading] = useState(false)
   // Default: remember (most users want this). Persist the *preference* in
   // localStorage so the checkbox remembers its own state next visit.
   const [rememberMe, setRememberMe] = useState(() => {
@@ -19,6 +21,30 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
       ? localStorage.getItem('tecito_remember_me') !== 'false'
       : true
   })
+
+  /** "¿Olvidaste?" — uses the email already in the field. We send the user a
+   * password-recovery link via Supabase. The link redirects them back to the
+   * site, where Supabase fires a PASSWORD_RECOVERY auth event that App.tsx
+   * picks up to show the ResetPasswordView. */
+  const handleForgot = async () => {
+    setError('')
+    setInfo('')
+    const trimmed = email.trim()
+    if (!trimmed) {
+      setError('Ingresá tu email arriba y volvé a tocar "¿Olvidaste?"')
+      return
+    }
+    setForgotLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
+      redirectTo: window.location.origin,
+    })
+    setForgotLoading(false)
+    if (error) {
+      setError(error.message)
+      return
+    }
+    setInfo(`Te enviamos un email a ${trimmed}. Revisá tu bandeja (y spam) y hacé click en el link para elegir una contraseña nueva.`)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,12 +109,15 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
         <div className="mb-5">
           <div className="flex items-baseline justify-between mb-1.5">
             <label className="text-[12px] text-text-muted font-medium">Contraseña</label>
-            <a
-              className="text-[11px] text-primary cursor-pointer"
+            <button
+              type="button"
+              onClick={handleForgot}
+              disabled={forgotLoading}
+              className="text-[11px] text-primary cursor-pointer bg-transparent border-none p-0 hover:underline disabled:opacity-60"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              ¿Olvidaste?
-            </a>
+              {forgotLoading ? 'enviando…' : '¿Olvidaste?'}
+            </button>
           </div>
           <input
             type="password"
@@ -110,6 +139,10 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
             Recordarme en este dispositivo
           </span>
         </label>
+
+        {info && (
+          <div className="text-[12px] text-primary mb-4 bg-primary-light rounded-[8px] px-3 py-2 leading-[1.55]">{info}</div>
+        )}
 
         {error && (
           <div className="text-[12px] text-coral mb-4 bg-coral-light rounded-[8px] px-3 py-2">{error}</div>
