@@ -35,6 +35,14 @@ import NewAppointmentModal from './components/agenda/NewAppointmentModal'
 import RemindersModal from './components/agenda/RemindersModal'
 
 type AuthScreen = 'loading' | 'landing' | 'login' | 'register' | 'reset-password' | 'onboarding' | 'join-org' | 'app' | 'public-booking' | 'not-found'
+
+/** Map an unauthenticated URL path to the screen the user should see. Used
+ * both on initial mount and on browser back/forward (popstate). */
+function unauthScreenForPath(path: string): AuthScreen {
+  if (path === '/login') return 'login'
+  if (path === '/register') return 'register'
+  return 'landing'
+}
 type AgendaMode = 'week' | 'month'
 
 export default function App() {
@@ -87,14 +95,10 @@ export default function App() {
     }
 
     // For unauthenticated users: /login → LoginView, /register → RegisterView,
-    // anything else (including /) → marketing landing. We let /login and
-    // /register persist in the URL during dev too, so a refresh lands you
-    // back on the same screen instead of bouncing to the landing.
-    const unauthScreenForPath = (path: string): AuthScreen => {
-      if (path === '/login') return 'login'
-      if (path === '/register') return 'register'
-      return 'landing'
-    }
+    // anything else (including /) → marketing landing. The mapping is the
+    // file-level `unauthScreenForPath` helper. We let /login and /register
+    // persist in the URL during dev too, so a refresh lands you back on the
+    // same screen instead of bouncing to the landing.
 
     // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -124,6 +128,21 @@ export default function App() {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  // Handle browser back/forward when the user is on the auth screens.
+  // Without this, going landing → login → "back" leaves the user stuck on
+  // login (URL changes to /, but React state stays at 'login'). Same for
+  // login → register → "back". We only react when the current screen is
+  // an unauthenticated one — the Dashboard has its own popstate handlers
+  // for modal dismissal.
+  useEffect(() => {
+    if (!['landing', 'login', 'register'].includes(authScreen)) return
+    const onPopState = () => {
+      setAuthScreen(unauthScreenForPath(window.location.pathname))
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [authScreen])
 
   // After any successful auth transition (login → app/onboarding, register
   // → login, etc.) we collapse the URL back to `/`. Without this the URL
