@@ -309,7 +309,7 @@ export default function OnboardingWizard({ firstName, lastName, onComplete }: Pr
                     onChange={(e) => update('bio', e.target.value)}
                     rows={3}
                     placeholder="Contá brevemente tu especialización y enfoque..."
-                    className="w-full px-3 py-2.5 rounded-md border border-gray-border text-sm focus:outline-none focus:border-primary-mid focus:ring-1 focus:ring-primary-mid resize-none"
+                    className="w-full px-3 py-2.5 rounded-md border border-gray-border bg-white text-sm focus:outline-none focus:border-primary-mid focus:ring-1 focus:ring-primary-mid resize-none"
                   />
                   <div className="text-[10px] text-text-hint mt-1">Se muestra a pacientes nuevos en tu link público.</div>
                 </div>
@@ -445,7 +445,7 @@ export default function OnboardingWizard({ firstName, lastName, onComplete }: Pr
                       value={data.priceParticular}
                       onChange={(e) => update('priceParticular', e.target.value)}
                       placeholder="15000"
-                      className="w-full px-3 py-2.5 rounded-md border border-gray-border text-sm focus:outline-none focus:border-primary-mid focus:ring-1 focus:ring-primary-mid"
+                      className="w-full px-3 py-2.5 rounded-md border border-gray-border bg-white text-sm focus:outline-none focus:border-primary-mid focus:ring-1 focus:ring-primary-mid"
                     />
                   </div>
                 </div>
@@ -502,7 +502,7 @@ function FormField({ label, value, placeholder, onChange }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2.5 rounded-md border border-gray-border text-sm focus:outline-none focus:border-primary-mid focus:ring-1 focus:ring-primary-mid"
+        className="w-full px-3 py-2.5 rounded-md border border-gray-border bg-white text-sm focus:outline-none focus:border-primary-mid focus:ring-1 focus:ring-primary-mid"
       />
     </div>
   )
