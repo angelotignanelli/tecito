@@ -449,16 +449,8 @@ export default function OnboardingWizard({ firstName, lastName, onComplete }: Pr
                     />
                   </div>
                 </div>
-                <div className="mb-6">
+                <div>
                   <FormField label="Alias de pago (CBU/Alias)" value={data.bankAlias} placeholder="dra.perez.psi" onChange={(v) => update('bankAlias', v)} />
-                </div>
-
-                <div className="bg-teal-light rounded-[10px] p-4 text-center">
-                  <div className="text-lg mb-2">🎉</div>
-                  <div className="text-sm font-medium text-teal mb-1">¡Casi listo!</div>
-                  <div className="text-xs text-teal/80 leading-[1.55]">
-                    En el siguiente paso vas a ver tu <strong className="text-teal">link de turnos</strong> para empezar a compartir con tus pacientes. Estos datos los podés modificar después desde tu perfil.
-                  </div>
                 </div>
               </div>
             )}
