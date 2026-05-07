@@ -95,8 +95,8 @@ function Nav({
           <button onClick={() => onScrollTo('precios')} className="hover:text-text cursor-pointer transition-colors">Precios</button>
           <button onClick={() => onScrollTo('faq')} className="hover:text-text cursor-pointer transition-colors">FAQ</button>
         </div>
-        <div className="flex gap-2.5 items-center">
-          <button onClick={onGoToLogin} className="hidden sm:inline-flex"><BtnGhost>Iniciar sesión</BtnGhost></button>
+        <div className="flex gap-2 sm:gap-2.5 items-center">
+          <button onClick={onGoToLogin}><BtnGhost>Iniciar sesión</BtnGhost></button>
           <button onClick={onGoToRegister}><BtnPrimary withArrow>Probar gratis</BtnPrimary></button>
         </div>
       </div>
@@ -120,11 +120,11 @@ function LogoMark() {
 function BtnPrimary({ children, withArrow = false }: { children: React.ReactNode; withArrow?: boolean }) {
   return (
     <span
-      className="inline-flex items-center gap-2 px-5 py-3 rounded-[10px] text-sm font-medium border border-transparent whitespace-nowrap transition-all hover:-translate-y-px"
+      className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-[10px] text-[13px] sm:text-sm font-medium border border-transparent whitespace-nowrap transition-all hover:-translate-y-px"
       style={{ background: 'var(--color-primary)', color: 'var(--color-surface)' }}
     >
       {children}
-      {withArrow && <span className="transition-transform">→</span>}
+      {withArrow && <span className="hidden sm:inline transition-transform">→</span>}
     </span>
   )
 }
@@ -132,7 +132,7 @@ function BtnPrimary({ children, withArrow = false }: { children: React.ReactNode
 function BtnGhost({ children }: { children: React.ReactNode }) {
   return (
     <span
-      className="inline-flex items-center gap-2 px-5 py-3 rounded-[10px] text-sm font-medium whitespace-nowrap transition-colors hover:bg-black/[0.03]"
+      className="inline-flex items-center gap-2 px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-[10px] text-[13px] sm:text-sm font-medium whitespace-nowrap transition-colors hover:bg-black/[0.03]"
       style={{ background: 'transparent', color: 'var(--color-text)', border: '1px solid var(--color-gray-border-2)' }}
     >
       {children}

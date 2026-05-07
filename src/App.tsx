@@ -189,9 +189,13 @@ export default function App() {
   }
 
   const handleLogout = async () => {
+    // After signing out we drop the user on /login (not on the marketing
+    // landing). They've already converted; bouncing them back to the
+    // landing page feels disorienting and adds friction if they meant to
+    // re-login from another account.
     await supabase.auth.signOut()
-    window.history.pushState({}, '', '/')
-    setAuthScreen('landing')
+    window.history.pushState({}, '', '/login')
+    setAuthScreen('login')
     setUserFirstName('')
     setUserLastName('')
   }
