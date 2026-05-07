@@ -8,6 +8,12 @@
   ],
   "redirects": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "tecito-topaz.vercel.app" }],
+      "destination": "https://tecito.com.ar/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "tecito-topaz.vercel.app" }],
       "destination": "https://tecito.com.ar/:path*",
