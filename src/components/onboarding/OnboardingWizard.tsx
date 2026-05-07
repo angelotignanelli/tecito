@@ -455,8 +455,10 @@ export default function OnboardingWizard({ firstName, lastName, onComplete }: Pr
 
                 <div className="bg-teal-light rounded-[10px] p-4 text-center">
                   <div className="text-lg mb-2">🎉</div>
-                  <div className="text-sm font-medium text-teal mb-1">Todo listo!</div>
-                  <div className="text-xs text-teal/80">Tu perfil está casi completo. Podés modificar estos datos en cualquier momento desde la configuración.</div>
+                  <div className="text-sm font-medium text-teal mb-1">¡Casi listo!</div>
+                  <div className="text-xs text-teal/80 leading-[1.55]">
+                    En el siguiente paso vas a ver tu <strong className="text-teal">link de turnos</strong> para empezar a compartir con tus pacientes. Estos datos los podés modificar después desde tu perfil.
+                  </div>
                 </div>
               </div>
             )}
