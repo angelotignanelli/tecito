@@ -24,6 +24,13 @@ export default function RegisterView({ onRegisterSuccess, onGoToLogin }: Props) 
       setError('Completá todos los campos')
       return
     }
+    // Require both first AND last name. Without this, the user can register
+    // as "Angelo" and the wizard ends up rendering "Aundefined" as initials.
+    const nameParts = trimmedName.split(/\s+/).filter(Boolean)
+    if (nameParts.length < 2) {
+      setError('Ingresá nombre y apellido (separados por un espacio)')
+      return
+    }
     if (!/\S+@\S+\.\S+/.test(email)) {
       setError('Ingresá un email válido')
       return
@@ -34,8 +41,8 @@ export default function RegisterView({ onRegisterSuccess, onGoToLogin }: Props) 
     }
 
     // Split the full name into first + last for the profile
-    const [firstName, ...rest] = trimmedName.split(' ')
-    const lastName = rest.join(' ') || ''
+    const [firstName, ...rest] = nameParts
+    const lastName = rest.join(' ')
 
     setLoading(true)
     const { error } = await supabase.auth.signUp({

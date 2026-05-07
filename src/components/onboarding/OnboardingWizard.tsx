@@ -221,7 +221,12 @@ export default function OnboardingWizard({ firstName, lastName, onComplete }: Pr
   }
 
   const progress = ((step + 1) / steps.length) * 100
-  const initials = `${firstName[0]}${lastName[0]}`
+  // Defensive — fall back gracefully if either name is missing instead of
+  // rendering "Aundefined". RegisterView splits the full name by space, so
+  // a single-word name leaves lastName empty.
+  const initials = (
+    (firstName?.[0] ?? '') + (lastName?.[0] ?? '')
+  ).toUpperCase() || '?'
 
   // Celebration / link reveal screen — shown after the wizard saves
   // successfully, so the doctor sees their first share-able artifact and
@@ -527,8 +532,15 @@ function BookingLinkReveal({
     setTimeout(() => setCopied(false), 2000)
   }
 
+  // Greeting falls back to a generic "¡Bienvenida a Tecito!" if firstName is
+  // missing. Same for the share text (drops the self-introduction).
+  const safeFirstName = (firstName ?? '').trim()
+  const greeting = safeFirstName
+    ? `¡Bienvenida a Tecito, ${safeFirstName}!`
+    : '¡Bienvenida a Tecito!'
+  const shareIntro = safeFirstName ? `Hola! Soy ${safeFirstName}. ` : 'Hola! '
   const shareText = encodeURIComponent(
-    `Hola! Soy ${firstName}. Si querés sacar un turno conmigo, podés hacerlo desde acá: ${publicUrl}`,
+    `${shareIntro}Si querés sacar un turno conmigo, podés hacerlo desde acá: ${publicUrl}`,
   )
 
   return (
@@ -551,7 +563,7 @@ function BookingLinkReveal({
               className="text-[32px] font-normal tracking-[-0.025em] text-text leading-[1.15] mb-2"
               style={{ fontFamily: 'var(--font-serif)' }}
             >
-              ¡Bienvenida a Tecito, {firstName}!
+              {greeting}
             </h1>
             <p className="text-sm text-text-muted leading-[1.6] max-w-[440px] mx-auto">
               Tu perfil está listo. Te dejamos abajo el link que podés compartir con tus pacientes para que saquen turno solos, en cualquier momento.
