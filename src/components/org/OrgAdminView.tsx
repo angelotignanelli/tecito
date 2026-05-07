@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useOrgMembers, useOrgInvites, type Organization, type OrgMember } from '../../lib/hooks'
 import { hexToLightBg } from '../../lib/theme'
+import { getPublicBaseUrl } from '../../lib/publicUrl'
 
 interface Props {
   org: Organization
@@ -20,7 +21,7 @@ export default function OrgAdminView({ org, userId, onOrgUpdated }: Props) {
   }
 
   const handleCopy = (code: string) => {
-    const url = `${window.location.origin}?invite=${code}`
+    const url = `${getPublicBaseUrl()}?invite=${code}`
     navigator.clipboard.writeText(url)
     setCopied(code)
     setTimeout(() => setCopied(null), 2000)
@@ -90,7 +91,7 @@ export default function OrgAdminView({ org, userId, onOrgUpdated }: Props) {
             ) : (
               <div className="space-y-2">
                 {invites.map((invite) => {
-                  const url = `${window.location.origin}?invite=${invite.invite_code}`
+                  const url = `${getPublicBaseUrl()}?invite=${invite.invite_code}`
                   const isExpired = invite.expires_at && new Date(invite.expires_at) < new Date()
                   const isExhausted = invite.max_uses !== null && invite.use_count >= invite.max_uses
                   return (

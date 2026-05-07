@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useProfile, type ProfileRow } from '../../lib/hooks'
 import { supabase } from '../../lib/supabase'
 import { getPlan, type PlanId } from '../../lib/plans'
+import { getPublicBaseUrl } from '../../lib/publicUrl'
 import PageHeader from '../PageHeader'
 import Btn from '../Btn'
 import LocationsManager from './LocationsManager'
@@ -345,7 +346,7 @@ function BookingLink({ bookingCode }: { bookingCode: string | null }) {
     )
   }
 
-  const publicUrl = `${window.location.origin}/p/${bookingCode}`
+  const publicUrl = `${getPublicBaseUrl()}/p/${bookingCode}`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(publicUrl)
@@ -426,11 +427,13 @@ function CalendarSync({ bookingCode }: { bookingCode: string | null }) {
 
   // Cleaner URL through Vercel proxy → transparently forwards to the Supabase edge fn.
   // Falls back to the direct Supabase URL when running locally on Vite dev server.
+  // Uses the canonical public URL (tecito.com.ar) so the calendar subscription
+  // doesn't get bound to whatever domain the doctor happened to use when copying.
   const origin = window.location.origin
   const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1')
   const icsUrl = isLocal
     ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ics-feed/${bookingCode}.ics`
-    : `${origin}/ics/${bookingCode}.ics`
+    : `${getPublicBaseUrl()}/ics/${bookingCode}.ics`
   // webcal:// scheme triggers the native "subscribe" flow in macOS / iOS / Outlook
   const webcalUrl = icsUrl.replace(/^https?:\/\//, 'webcal://')
   // Google Calendar's "Add via URL" only works reliably when the URL goes through the

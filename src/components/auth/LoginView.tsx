@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { getPublicBaseUrl } from '../../lib/publicUrl'
 import AuthShell from './AuthShell'
 
 interface Props {
@@ -35,8 +36,11 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
       return
     }
     setForgotLoading(true)
+    // Use the canonical URL, not window.location.origin, so the recovery
+    // email link always points at tecito.com.ar even if the doctor is
+    // currently using the *.vercel.app technical URL.
     const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
-      redirectTo: window.location.origin,
+      redirectTo: getPublicBaseUrl(),
     })
     setForgotLoading(false)
     if (error) {
