@@ -6,6 +6,14 @@
       "schedule": "15 3 * * *"
     }
   ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "tecito-topaz.vercel.app" }],
+      "destination": "https://tecito.com.ar/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/ics/:code.ics", "destination": "https://wyrpnsszzlzhvhxtwlzg.supabase.co/functions/v1/ics-feed/:code.ics" },
     { "source": "/ics/:code", "destination": "https://wyrpnsszzlzhvhxtwlzg.supabase.co/functions/v1/ics-feed/:code" },
