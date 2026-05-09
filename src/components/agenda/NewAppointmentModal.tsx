@@ -269,10 +269,17 @@ export default function NewAppointmentModal({
                 })}
               </div>
 
-              {/* New patient option */}
-              {patientSearch.trim().length >= 2 && filteredPatients.length === 0 && (
+              {/* New patient option — always available when the user has
+                  typed a name, even if there are matches. Two patients can
+                  share a name (homonimia / same first name etc.) and the
+                  doctor needs to be able to register the new one without
+                  being forced into the existing record. */}
+              {patientSearch.trim().length >= 2 && (
                 <button
-                  onClick={() => setIsNewPatient(true)}
+                  onClick={() => {
+                    setIsNewPatient(true)
+                    setSelectedPatient(null)
+                  }}
                   className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-[10px] border cursor-pointer transition-colors mt-2 ${
                     isNewPatient
                       ? 'border-primary-mid bg-primary-light'
@@ -285,7 +292,9 @@ export default function NewAppointmentModal({
                     <Icon name="plus" size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-medium text-text">Crear paciente nuevo</div>
+                    <div className="text-[13px] font-medium text-text">
+                      {filteredPatients.length > 0 ? 'Crear paciente nuevo con este nombre' : 'Crear paciente nuevo'}
+                    </div>
                     <div className="text-[11px] text-text-hint truncate">«{patientSearch.trim()}»</div>
                   </div>
                 </button>
