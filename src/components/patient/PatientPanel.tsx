@@ -311,10 +311,13 @@ export default function PatientPanel({ appointment, dayAppointments, dayLabel, s
           </>
         )}
 
-        {/* Booking link — always visible on the day overview so the
-            doctor doesn't have to dig into Mi perfil to grab and share
-            it. The most-used affordance is "compartir por WhatsApp". */}
-        {bookingCode && (
+        {/* Booking link — only when there are NO turnos for the day.
+            Once the doctor has bookings, the right panel focuses on
+            day stats / patients; for sharing they have the dedicated
+            "Mi link" sidebar item now (modal with full options). On
+            empty days we keep the card here so it ties visually to
+            the empty-state nudge above. */}
+        {bookingCode && total === 0 && !isBlocked && (
           <BookingLinkCard bookingCode={bookingCode} doctorFirstName={doctorFirstName} />
         )}
       </div>

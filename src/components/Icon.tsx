@@ -34,6 +34,7 @@ const ICONS: Record<string, string> = {
   arrowR:   'M4 10h12M12 6l4 4-4 4',
   lock:     'M6 9V6a4 4 0 0 1 8 0v3M4 9h12v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9zM10 12v2',
   alert:    'M10 3l8 14H2L10 3zM10 8v4M10 14v.5',
+  link:     'M9 11a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1 1M11 9a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1-1',
 }
 
 interface Props {

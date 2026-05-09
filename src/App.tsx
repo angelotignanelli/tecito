@@ -33,6 +33,7 @@ import Btn from './components/Btn'
 import PageHeader from './components/PageHeader'
 import NewAppointmentModal from './components/agenda/NewAppointmentModal'
 import RemindersModal from './components/agenda/RemindersModal'
+import MyLinkModal from './components/share/MyLinkModal'
 
 type AuthScreen = 'loading' | 'landing' | 'login' | 'register' | 'reset-password' | 'onboarding' | 'join-org' | 'app' | 'public-booking' | 'not-found'
 
@@ -310,6 +311,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null)
   const [showCreateOrg, setShowCreateOrg] = useState(false)
   const [showPlans, setShowPlans] = useState(false)
+  const [showMyLink, setShowMyLink] = useState(false)
   const [paywall, setPaywall] = useState<{ title: string; description: string; requiredPlan: 'pro' | 'clinic' } | null>(null)
   const [showNewAppointment, setShowNewAppointment] = useState(false)
   const [reasignarFor, setReasignarFor] = useState<Patient | null>(null)
@@ -594,6 +596,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         planStatus={profile?.plan_status ?? null}
         planValidUntil={profile?.plan_valid_until ?? null}
         onOpenPlans={() => setShowPlans(true)}
+        onOpenMyLink={profile?.booking_code ? () => setShowMyLink(true) : undefined}
       />
 
       {activeView === 'agenda' && (
@@ -860,6 +863,14 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             onPlanChanged={() => window.location.reload()}
           />
         </div>
+      )}
+
+      {showMyLink && profile?.booking_code && (
+        <MyLinkModal
+          bookingCode={profile.booking_code}
+          doctorFirstName={profile?.first_name}
+          onClose={() => setShowMyLink(false)}
+        />
       )}
 
       {paywall && (

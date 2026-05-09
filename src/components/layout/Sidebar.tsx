@@ -29,9 +29,13 @@ interface Props {
   planStatus?: string | null
   planValidUntil?: string | null
   onOpenPlans?: () => void
+  /** Opens the "Mi link de turnos" modal — surfaced as a top-level
+   * sidebar item so the share affordance lives one click away from
+   * everywhere in the app, not buried in Mi perfil. */
+  onOpenMyLink?: () => void
 }
 
-export default function Sidebar({ activeView, onNavigate, agendaBadge, onLogout, doctorName, doctorSub, organizations, currentOrg, isOrgAdmin, onSwitchOrg, onCreateOrg, currentPlan, planStatus, planValidUntil, onOpenPlans }: Props) {
+export default function Sidebar({ activeView, onNavigate, agendaBadge, onLogout, doctorName, doctorSub, organizations, currentOrg, isOrgAdmin, onSwitchOrg, onCreateOrg, currentPlan, planStatus, planValidUntil, onOpenPlans, onOpenMyLink }: Props) {
   const showStatsLock = currentPlan ? !PLANS[currentPlan].limits.stats : false
   const [orgOpen, setOrgOpen] = useState(false)
   const orgRef = useRef<HTMLDivElement>(null)
@@ -146,6 +150,18 @@ export default function Sidebar({ activeView, onNavigate, agendaBadge, onLogout,
             </div>
           )
         })}
+
+        {/* "Mi link" — opens a modal, not a view. We render it inline
+            with the nav so it feels native, but click handler differs. */}
+        {onOpenMyLink && (
+          <div
+            onClick={onOpenMyLink}
+            className="flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg cursor-pointer text-[13px] text-text-muted hover:bg-surface-2 transition-colors"
+          >
+            <Icon name="link" size={16} />
+            <span className="flex-1">Mi link</span>
+          </div>
+        )}
       </nav>
 
       {/* Bottom nav */}
