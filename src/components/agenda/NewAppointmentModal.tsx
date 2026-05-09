@@ -131,16 +131,31 @@ export default function NewAppointmentModal({
     setError(null)
     setSaving(true)
 
+    // Hard 20-second cap so the button can't get permanently stuck on
+    // "Guardando..." if Supabase / the network hangs without resolving.
+    // We wrap each await in `Promise.race` with a timeout.
+    const withTimeout = <T,>(p: Promise<T>, ms = 20_000, label = 'op'): Promise<T> =>
+      Promise.race([
+        p,
+        new Promise<T>((_, reject) =>
+          setTimeout(() => reject(new Error(`timeout:${label}`)), ms),
+        ),
+      ])
+
+    let closedOk = false
     try {
       let patientId: string | null = null
       let patientName = ''
 
       if (isNewPatient) {
         patientName = patientSearch.trim()
-        const created = await onCreatePatient(patientName, newPatientInsurance)
+        const created = await withTimeout(
+          onCreatePatient(patientName, newPatientInsurance),
+          20_000,
+          'create-patient',
+        )
         if (!created) {
           setError('No se pudo crear el paciente')
-          setSaving(false)
           return
         }
         patientId = created.id
@@ -150,27 +165,45 @@ export default function NewAppointmentModal({
         patientId = row?.id ?? null
       }
 
-      const err = await onCreateAppointment({
-        patient_id: patientId,
-        patient_name: patientName,
-        location_id: locationId ?? primaryLocation?.id ?? null,
-        date,
-        time,
-        duration: `${duration} min`,
-        detail,
-        status,
-      })
+      const err = await withTimeout(
+        onCreateAppointment({
+          patient_id: patientId,
+          patient_name: patientName,
+          location_id: locationId ?? primaryLocation?.id ?? null,
+          date,
+          time,
+          duration: `${duration} min`,
+          detail,
+          status,
+        }),
+        20_000,
+        'create-appointment',
+      )
 
       if (err) {
-        setError('No se pudo crear el turno')
-        setSaving(false)
+        // err can be a Supabase PostgrestError — surface its message if it
+        // has one, otherwise fall back to a generic line.
+        const message = (err as { message?: string })?.message
+        setError(message ? `No se pudo crear el turno: ${message}` : 'No se pudo crear el turno')
         return
       }
 
+      closedOk = true
       onClose()
     } catch (e) {
-      setError('Error inesperado')
-      setSaving(false)
+      const isTimeout = (e as Error)?.message?.startsWith('timeout:')
+      setError(
+        isTimeout
+          ? 'La operación tardó demasiado. Revisá tu conexión y volvé a intentar.'
+          : 'Error inesperado al guardar.',
+      )
+      // Surface to console so we can debug from real-user reports.
+      console.error('[new-appointment] save failed', e)
+    } finally {
+      // Guarantee we leave the loading state even on success+unmount or on
+      // any thrown path — the previous code only cleared it in some
+      // branches and the button could end up permanently in "Guardando…".
+      if (!closedOk) setSaving(false)
     }
   }
 
