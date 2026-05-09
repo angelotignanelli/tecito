@@ -101,8 +101,17 @@ export default function PublicBookingPage({ bookingCode }: Props) {
 
   const handleBookingSuccess = async () => {
     if (!doctor) return
+    // 1) Refresh availability so the just-booked slot doesn't show as
+    //    available anymore if the patient browses again.
     const slots = await getGroupedAvailableSlots(doctor.id, locations, 45)
     setAllSlots(slots)
+    // 2) Dismiss the modal and clear the picker state. Without this the
+    //    "Listo" button on the success screen had nothing to react to and
+    //    the patient was stuck on the green confirmation forever.
+    setOpenBooking(false)
+    setSelectedSlot(null)
+    setPickedTime(null)
+    setSelectedDay(null)
   }
 
   const handleOfficeClick = (locId: string) => {
