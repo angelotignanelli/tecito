@@ -44,6 +44,10 @@ export default function PublicBookingPage({ bookingCode }: Props) {
   const [locations, setLocations] = useState<PublicLocation[]>([])
   const [allSlots, setAllSlots] = useState<DaySlotsGrouped[]>([])
   const [loading, setLoading] = useState(true)
+  // Separate loading flag for the slot calendar — re-fetches when the
+  // patient changes the consultorio filter shouldn't blank out the
+  // whole page, just the calendar grid.
+  const [slotsLoading, setSlotsLoading] = useState(false)
   const [notFound, setNotFound] = useState(false)
 
   // Selection state
@@ -85,16 +89,24 @@ export default function PublicBookingPage({ bookingCode }: Props) {
   // each day still has one representative location to display.
   useEffect(() => {
     if (!doctor) return
+    let cancelled = false
+    setSlotsLoading(true)
+
+    const finish = (slots: DaySlotsGrouped[]) => {
+      if (cancelled) return
+      setAllSlots(slots)
+      setSlotsLoading(false)
+    }
+
     if (!manualLocationId) {
       // Refresh the merged view (in case data changed while a filter was active).
-      getGroupedAvailableSlots(doctor.id, locations, 45).then(setAllSlots)
-      return
+      getGroupedAvailableSlots(doctor.id, locations, 45).then(finish)
+    } else {
+      getAvailableSlotsRange(doctor.id, 45, manualLocationId).then((slots) => {
+        finish(slots.map((s) => ({ ...s, locationId: manualLocationId })))
+      })
     }
-    let cancelled = false
-    getAvailableSlotsRange(doctor.id, 45, manualLocationId).then((slots) => {
-      if (cancelled) return
-      setAllSlots(slots.map((s) => ({ ...s, locationId: manualLocationId })))
-    })
+
     return () => { cancelled = true }
   }, [doctor, locations, manualLocationId])
 
@@ -318,6 +330,7 @@ export default function PublicBookingPage({ bookingCode }: Props) {
               manualLocationId={manualLocationId}
               locationsById={locationsById}
               stepIndex={pickedTime ? 1 : 0}
+              loading={slotsLoading}
             />
             <RightRail
               locations={locations}
@@ -595,6 +608,7 @@ function CalendarGrid({
   manualLocationId,
   locationsById,
   stepIndex,
+  loading,
 }: {
   allSlots: DaySlotsGrouped[]
   selectedDay: string | null
@@ -602,6 +616,7 @@ function CalendarGrid({
   manualLocationId: string | null
   locationsById: Map<string, { loc: PublicLocation; color: string; index: number }>
   stepIndex: number
+  loading?: boolean
 }) {
   const slotMap = new Map<string, DaySlotsGrouped>()
   for (const d of allSlots) slotMap.set(d.date, d)
@@ -708,7 +723,22 @@ function CalendarGrid({
       </div>
 
       <div className="grid gap-[7px]">
-        {grid.map((row, wi) => (
+        {loading ? (
+          /* Skeleton — 4 rows × 7 cells of empty pulsing tiles. Same
+             aspect-ratio + padding as real cells so the calendar
+             doesn't shift dimensions when slots arrive. */
+          Array.from({ length: 4 }, (_, wi) => (
+            <div key={wi} className="grid grid-cols-7 gap-[7px]">
+              {Array.from({ length: 7 }, (_, ci) => (
+                <div
+                  key={ci}
+                  className="aspect-square rounded-[10px] bg-surface-2 animate-pulse"
+                  style={{ animationDelay: `${(wi * 7 + ci) * 30}ms` }}
+                />
+              ))}
+            </div>
+          ))
+        ) : grid.map((row, wi) => (
           <div key={wi} className="grid grid-cols-7 gap-[7px]">
             {row.map((cell) => {
               const day = cell.day
