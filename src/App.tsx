@@ -738,6 +738,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             onBlockHours={handleBlockHours}
             onRecordarTodos={handleRecordarTodos}
             onScheduleAppointment={handleScheduleFromPatient}
+            bookingCode={profile?.booking_code ?? null}
+            doctorFirstName={profile?.first_name ?? userFirstName}
           />
         </>
       )}

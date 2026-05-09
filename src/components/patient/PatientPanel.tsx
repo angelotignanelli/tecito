@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Appointment } from '../../data/appointments'
+import { getPublicBaseUrl } from '../../lib/publicUrl'
 import Icon from '../Icon'
 import Btn from '../Btn'
 
@@ -14,9 +15,15 @@ interface Props {
   onBlockHours?: (date: string, from: string, to: string) => void
   onRecordarTodos?: () => void
   onScheduleAppointment?: (appointment: Appointment) => void
+  /** Doctor's public booking code — drives the "Tu link de turnos" card
+   * surfaced in the day overview so the link is one glance away from
+   * the agenda instead of buried in Mi perfil. */
+  bookingCode?: string | null
+  /** Doctor's first name (for pre-filling the WhatsApp share text). */
+  doctorFirstName?: string
 }
 
-export default function PatientPanel({ appointment, dayAppointments, dayLabel, selectedDate, isBlocked, blockReason, onUnblock, onBlockHours, onRecordarTodos, onScheduleAppointment }: Props) {
+export default function PatientPanel({ appointment, dayAppointments, dayLabel, selectedDate, isBlocked, blockReason, onUnblock, onBlockHours, onRecordarTodos, onScheduleAppointment, bookingCode, doctorFirstName }: Props) {
   const [showBlockForm, setShowBlockForm] = useState(false)
   const [showBlockConfirm, setShowBlockConfirm] = useState(false)
   const [blockFrom, setBlockFrom] = useState('09:00')
@@ -290,6 +297,13 @@ export default function PatientPanel({ appointment, dayAppointments, dayLabel, s
             </div>
           </>
         )}
+
+        {/* Booking link — always visible on the day overview so the
+            doctor doesn't have to dig into Mi perfil to grab and share
+            it. The most-used affordance is "compartir por WhatsApp". */}
+        {bookingCode && (
+          <BookingLinkCard bookingCode={bookingCode} doctorFirstName={doctorFirstName} />
+        )}
       </div>
 
       {/* Footer actions */}
@@ -502,6 +516,63 @@ function BlockHoursForm({ dayAppointments, blockFrom, blockTo, showConfirm, onCh
         </Btn>
         <Btn size="sm" onClick={onCancel}>Cancelar</Btn>
       </div>
+    </div>
+  )
+}
+
+
+/**
+ * Compact "Tu link de turnos" card surfaced on the day overview. The
+ * doctor previously had to navigate to Mi perfil to grab the URL — now
+ * it sits one glance below the daily stats so they can copy/share
+ * during a regular agenda session without context-switching.
+ */
+function BookingLinkCard({
+  bookingCode,
+  doctorFirstName,
+}: {
+  bookingCode: string
+  doctorFirstName?: string
+}) {
+  const url = `${getPublicBaseUrl()}/p/${bookingCode}`
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const intro = doctorFirstName ? `Soy ${doctorFirstName}. ` : ""
+  const shareText = encodeURIComponent(
+    `Hola! ${intro}Si querés sacar un turno conmigo, podés hacerlo desde acá: ${url}`,
+  )
+
+  return (
+    <div className="mt-6 pt-5 border-t border-gray-border">
+      <Eyebrow>Tu link de turnos</Eyebrow>
+      <p className="text-[12px] text-text-muted mt-1.5 mb-3 leading-[1.55]">
+        Compartilo con tus pacientes para que reserven solos.
+      </p>
+      <div className="bg-surface-2 rounded-[10px] px-3 py-2.5 mb-2 flex items-center gap-2">
+        <div className="text-[11px] font-mono text-text truncate flex-1" title={url}>
+          {url}
+        </div>
+        <button
+          onClick={handleCopy}
+          className="px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer border border-primary bg-primary text-white hover:bg-[#2F3C2D] transition-colors shrink-0"
+        >
+          {copied ? "¡Copiado!" : "Copiar"}
+        </button>
+      </div>
+      <a
+        href={`https://wa.me/?text=${shareText}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-[12px] text-primary hover:underline cursor-pointer"
+      >
+        💬 Compartir por WhatsApp
+      </a>
     </div>
   )
 }
