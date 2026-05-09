@@ -231,20 +231,18 @@ export default function PatientPanel({ appointment, dayAppointments, dayLabel, s
         )}
 
         {total === 0 && !isBlocked ? (
-          /* Friendly empty state — nudges the doctor toward sharing
-             their booking link (rendered as the BookingLinkCard right
-             below) instead of just stating the empty fact. The arrow
-             visually ties the prompt to the link card. */
-          <div className="bg-surface-2 border border-gray-border rounded-[12px] p-4 text-center">
-            <div className="text-[22px] mb-1.5" aria-hidden>📭</div>
-            <div className="text-[13px] font-medium text-text mb-1">
-              Sin turnos todavía
+          /* Unified empty-state + share card. When the day is empty the
+             primary call to action is "compartí tu link" — surface the
+             URL and the WhatsApp share inside the same card so the
+             nudge and the action are one visual unit. */
+          bookingCode ? (
+            <EmptyDayShareCard bookingCode={bookingCode} doctorFirstName={doctorFirstName} />
+          ) : (
+            <div className="bg-surface-2 border border-gray-border rounded-[12px] p-4 text-center">
+              <div className="text-[22px] mb-1.5" aria-hidden>📭</div>
+              <div className="text-[13px] font-medium text-text">Sin turnos todavía</div>
             </div>
-            <p className="text-[12px] text-text-muted leading-[1.55]">
-              Compartí tu link de turnos para que tus pacientes reserven solos.
-              <span className="block text-text-hint mt-1.5">↓ está abajo, listo para copiar</span>
-            </p>
-          </div>
+          )
         ) : total === 0 && isBlocked ? (
           <p className="text-[13px] text-text-hint">Día sin turnos — bloqueado.</p>
         ) : (
@@ -311,15 +309,10 @@ export default function PatientPanel({ appointment, dayAppointments, dayLabel, s
           </>
         )}
 
-        {/* Booking link — only when there are NO turnos for the day.
-            Once the doctor has bookings, the right panel focuses on
-            day stats / patients; for sharing they have the dedicated
-            "Mi link" sidebar item now (modal with full options). On
-            empty days we keep the card here so it ties visually to
-            the empty-state nudge above. */}
-        {bookingCode && total === 0 && !isBlocked && (
-          <BookingLinkCard bookingCode={bookingCode} doctorFirstName={doctorFirstName} />
-        )}
+        {/* The booking link only shows up *inside* the empty-state
+            card above (EmptyDayShareCard). On busy days the share
+            affordance lives in the "Mi link" sidebar item, keeping
+            this panel focused on stats. */}
       </div>
 
       {/* Footer actions */}
@@ -538,12 +531,14 @@ function BlockHoursForm({ dayAppointments, blockFrom, blockTo, showConfirm, onCh
 
 
 /**
- * Compact "Tu link de turnos" card surfaced on the day overview. The
- * doctor previously had to navigate to Mi perfil to grab the URL — now
- * it sits one glance below the daily stats so they can copy/share
- * during a regular agenda session without context-switching.
+ * Empty-day card. When the doctor's day has no turnos we don't just
+ * say "vacío" — we surface the share affordance as the natural next
+ * step: an icon, a friendly headline, the link itself prominently
+ * shown, and one-tap actions to copy or share via WhatsApp. All of it
+ * inside a single visual unit so the message and the action read as
+ * one thought instead of two stacked cards.
  */
-function BookingLinkCard({
+function EmptyDayShareCard({
   bookingCode,
   doctorFirstName,
 }: {
@@ -565,12 +560,21 @@ function BookingLinkCard({
   )
 
   return (
-    <div className="mt-6 pt-5 border-t border-gray-border">
-      <Eyebrow>Tu link de turnos</Eyebrow>
-      <p className="text-[12px] text-text-muted mt-1.5 mb-3 leading-[1.55]">
-        Compartilo con tus pacientes para que reserven solos.
-      </p>
-      <div className="bg-surface-2 rounded-[10px] px-3 py-2.5 mb-2 flex items-center gap-2">
+    <div className="bg-surface-2 border border-gray-border rounded-[14px] p-5">
+      <div className="text-center mb-4">
+        <div className="text-[28px] mb-2" aria-hidden>📭</div>
+        <div
+          className="text-[18px] tracking-[-0.015em] text-text mb-1.5"
+          style={{ fontFamily: 'var(--font-serif)' }}
+        >
+          Sin turnos todavía
+        </div>
+        <p className="text-[12px] text-text-muted leading-[1.55] max-w-[260px] mx-auto">
+          Compartí tu link de turnos para que tus pacientes reserven solos.
+        </p>
+      </div>
+
+      <div className="bg-surface border border-gray-border rounded-[10px] px-3 py-2.5 mb-2 flex items-center gap-2">
         <div className="text-[11px] font-mono text-text truncate flex-1" title={url}>
           {url}
         </div>
@@ -581,11 +585,12 @@ function BookingLinkCard({
           {copied ? "¡Copiado!" : "Copiar"}
         </button>
       </div>
+
       <a
         href={`https://wa.me/?text=${shareText}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[12px] text-primary hover:underline cursor-pointer"
+        className="block w-full text-center px-3 py-2 rounded-[10px] text-[12px] font-medium cursor-pointer bg-primary text-surface hover:bg-[#2F3C2D] transition-colors"
       >
         💬 Compartir por WhatsApp
       </a>
