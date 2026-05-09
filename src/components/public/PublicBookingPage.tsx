@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  getAvailableSlotsRange,
   getDoctorByBookingCode,
   getGroupedAvailableSlots,
   getPublicDoctorLocations,
@@ -73,6 +74,29 @@ export default function PublicBookingPage({ bookingCode }: Props) {
       setLoading(false)
     })()
   }, [bookingCode])
+
+  // When the patient picks a specific consultorio in the right rail,
+  // re-fetch slots filtered to JUST that location. This sidesteps the
+  // "first-wins by date" merge inside getGroupedAvailableSlots, which
+  // hid every day where another consultorio happened to be primary —
+  // a doctor with overlapping work days (e.g. Consultorio A: Mié+Vie,
+  // Consultorio B: Lun a Vie) would see B's Wed/Fri vanish entirely.
+  // No-filter view (manualLocationId=null) keeps the merged behavior:
+  // each day still has one representative location to display.
+  useEffect(() => {
+    if (!doctor) return
+    if (!manualLocationId) {
+      // Refresh the merged view (in case data changed while a filter was active).
+      getGroupedAvailableSlots(doctor.id, locations, 45).then(setAllSlots)
+      return
+    }
+    let cancelled = false
+    getAvailableSlotsRange(doctor.id, 45, manualLocationId).then((slots) => {
+      if (cancelled) return
+      setAllSlots(slots.map((s) => ({ ...s, locationId: manualLocationId })))
+    })
+    return () => { cancelled = true }
+  }, [doctor, locations, manualLocationId])
 
   // Indexes for quick lookup
   const locationsById = useMemo(() => {
