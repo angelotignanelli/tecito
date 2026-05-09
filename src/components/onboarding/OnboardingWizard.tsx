@@ -604,7 +604,7 @@ function BookingLinkReveal({
             <div className="text-base mt-[1px]">💡</div>
             <div className="text-xs text-teal leading-[1.55]">
               Vas a encontrar este link siempre desde tu cuenta en{' '}
-              <strong className="text-teal">Mi perfil → Link para agendar turnos</strong>. También podés modificar tu disponibilidad, consultorios y datos en cualquier momento.
+              <strong className="text-teal">Mi link</strong>, en el menú lateral. Desde ahí podés copiarlo, compartirlo por WhatsApp o email cuando quieras.
             </div>
           </div>
 
