@@ -51,6 +51,15 @@ export default function AppointmentCard({
   const isBloqueado = appointment.status === 'bloqueado'
   const isInactive = isLibre || isBloqueado
 
+  // Public-booking turnos are tagged with a sentinel detail string by
+  // src/lib/publicBooking.ts. The patient already filled in their phone +
+  // confirmed at the moment of booking, so the doctor doesn't need to
+  // "avisar" them — they're already aware. Visually we render these
+  // differently and demote the WhatsApp action from primary "Avisar"
+  // (urgent, first contact) to secondary "Recordar" (24h-before nudge).
+  const isPublicBooked =
+    appointment.detail === 'Turno solicitado desde la página pública'
+
   // Resolve effective location (explicit FK, then day-of-week inference)
   const effectiveLocation =
     locations && locations.length > 0
@@ -113,10 +122,22 @@ export default function AppointmentCard({
               <Icon name="building" size={10} /> {displayLocationName}
             </span>
           )}
-          {!isLibre && !isBloqueado && appointment.detail && <span>{appointment.detail}</span>}
-          <span className={`inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full ${badgeStyles[appointment.status]}`}>
-            {badgeLabel[appointment.status]}
-          </span>
+          {!isLibre && !isBloqueado && appointment.detail && !isPublicBooked && (
+            <span>{appointment.detail}</span>
+          )}
+          {/* Public-booking turnos use a "Reservado online" pill in place
+              of the "Sin confirmar" amber badge — the patient self-served
+              and is already aware of the turno, so there's nothing for
+              the doctor to confirm urgently. */}
+          {isPublicBooked && appointment.status === 'pendiente' ? (
+            <span className="inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full bg-teal-light text-teal">
+              Reservado online
+            </span>
+          ) : (
+            <span className={`inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full ${badgeStyles[appointment.status]}`}>
+              {badgeLabel[appointment.status]}
+            </span>
+          )}
         </div>
       </div>
 
@@ -135,17 +156,28 @@ export default function AppointmentCard({
           </span>
         ) : (
           <>
-            {/* Secondary actions — left of primary, hover-gated */}
+            {/* Secondary actions — left of primary, hover-gated.
+                For public-booked turnos the WhatsApp action lives here
+                too (as "Recordar", less urgent), since there's no
+                "Avisar" responsibility on the doctor. */}
             <span
               className={`flex gap-1.5 shrink-0 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} max-lg:opacity-100`}
             >
+              {appointment.status === 'pendiente' && isPublicBooked && (
+                <Btn size="sm" onClick={(e) => { e.stopPropagation(); onRecordar(appointment) }}>
+                  <Icon name="chat" size={12} /> Recordar
+                </Btn>
+              )}
               {appointment.status === 'pendiente' && (
                 <Btn size="sm" onClick={(e) => { e.stopPropagation(); onCancel(appointment.id) }}>Cancelar</Btn>
               )}
             </span>
 
-            {/* Primary action — always anchored to the right edge */}
-            {appointment.status === 'pendiente' && (
+            {/* Primary action — always anchored to the right edge.
+                Manually-scheduled pendiente turnos get the loud
+                "Avisar por WhatsApp"; public-booked ones don't (the
+                "Recordar" sibling already lives in the hover row). */}
+            {appointment.status === 'pendiente' && !isPublicBooked && (
               <Btn size="sm" variant="primary" onClick={(e) => { e.stopPropagation(); onRecordar(appointment) }}>
                 <Icon name="chat" size={12} /> Avisar por WhatsApp
               </Btn>
