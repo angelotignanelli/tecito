@@ -4,6 +4,7 @@ import PageHeader from '../PageHeader'
 import Icon from '../Icon'
 import Btn from '../Btn'
 import ImportPatientsModal, { type ImportRow } from './ImportPatientsModal'
+import AddPatientModal from './AddPatientModal'
 
 interface PatientWithId extends Patient {
   id?: string
@@ -16,14 +17,18 @@ interface Props {
   selectedPatient: Patient | null
   onRemovePatient?: (id: string) => Promise<unknown>
   onImportPatients?: (rows: ImportRow[]) => Promise<{ imported: number; errors: string[] }>
+  /** Persists a single patient. Hooked from App.tsx so the same plan-limit
+   * + Supabase logic that the import flow uses applies here too. */
+  onAddPatient?: (p: Patient) => Promise<Error | null>
   patientLimit?: number | null   // null = unlimited
 }
 
-export default function PatientsView({ patients, patientRows, onSelectPatient, selectedPatient, onRemovePatient, onImportPatients, patientLimit }: Props) {
+export default function PatientsView({ patients, patientRows, onSelectPatient, selectedPatient, onRemovePatient, onImportPatients, onAddPatient, patientLimit }: Props) {
   const [search, setSearch] = useState('')
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [showImport, setShowImport] = useState(false)
+  const [showAdd, setShowAdd] = useState(false)
 
   const filtered = patients.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
@@ -63,7 +68,11 @@ export default function PatientsView({ patients, patientRows, onSelectPatient, s
                   <Icon name="doc" size={13} /> Importar
                 </Btn>
               )}
-              <Btn variant="primary"><Icon name="plus" size={13} /> Nuevo paciente</Btn>
+              {onAddPatient && (
+                <Btn variant="primary" onClick={() => setShowAdd(true)}>
+                  <Icon name="plus" size={13} /> Nuevo paciente
+                </Btn>
+              )}
             </>
           }
         />
@@ -192,6 +201,14 @@ export default function PatientsView({ patients, patientRows, onSelectPatient, s
           currentPatientCount={patients.length}
           patientLimit={patientLimit ?? null}
           onImport={onImportPatients}
+        />
+      )}
+
+      {/* Add patient modal */}
+      {showAdd && onAddPatient && (
+        <AddPatientModal
+          onClose={() => setShowAdd(false)}
+          onAdd={onAddPatient}
         />
       )}
     </div>

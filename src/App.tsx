@@ -757,6 +757,25 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               }
               return removePatient(id)
             }}
+            onAddPatient={currentOrg ? undefined : async (p) => {
+              // Plan limit gate before hitting Supabase, so the user gets an
+              // immediate, friendly error instead of a DB-level rejection.
+              if (!canAddPatient(currentPlan, supaPatients.length)) {
+                return new Error('Llegaste al límite de pacientes de tu plan. Mejorá a Pro para sumar más.')
+              }
+              const err = await addPatient({
+                name: p.name,
+                phone: p.phone || '',
+                email: p.email || '',
+                age: p.age || '',
+                since: p.since,
+                insurance: p.insurance || 'Particular',
+                last_visit: '',
+                total_sessions: 0,
+                tags: [],
+              })
+              return err ? new Error(err.message) : null
+            }}
             onImportPatients={currentOrg ? undefined : async (rows) => {
               const errors: string[] = []
               let imported = 0
