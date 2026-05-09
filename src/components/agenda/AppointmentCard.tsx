@@ -120,33 +120,44 @@ export default function AppointmentCard({
         </div>
       </div>
 
-      {/* Actions */}
-      <div className={`flex gap-1.5 shrink-0 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} max-lg:opacity-100`}>
+      {/* Actions
+          The "Avisar por WhatsApp" CTA on pendiente turnos is the
+          single most-important call-to-action in the whole agenda
+          (manual scheduling skips the public-booking notification, so
+          the patient is otherwise unaware). We split it out and force
+          it visible — no hover gate — so the doctor immediately sees
+          they need to act. The rest of the actions stay subtle: visible
+          on hover at desktop, always shown on touch screens. */}
+      <div className="flex gap-1.5 shrink-0">
         {isPast && (appointment.status === 'confirmado' || appointment.status === 'pendiente') ? (
           <span className="inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full bg-surface-2 text-text-hint" style={{ fontFamily: 'var(--font-mono)' }}>
             Turno pasado
           </span>
         ) : (
           <>
-            {appointment.status === 'confirmado' && (
-              <Btn size="sm" onClick={(e) => { e.stopPropagation(); onCancel(appointment.id) }}>Cancelar</Btn>
-            )}
             {appointment.status === 'pendiente' && (
-              <>
-                <Btn size="sm" variant="primary" onClick={(e) => { e.stopPropagation(); onRecordar(appointment) }}>
-                  <Icon name="chat" size={12} /> Recordar
-                </Btn>
-                <Btn size="sm" onClick={(e) => { e.stopPropagation(); onCancel(appointment.id) }}>Cancelar</Btn>
-              </>
-            )}
-            {appointment.status === 'cancelado' && onReasignar && (
-              <Btn size="sm" onClick={(e) => { e.stopPropagation(); onReasignar(appointment) }}>
-                <Icon name="plus" size={12} /> Reasignar
+              <Btn size="sm" variant="primary" onClick={(e) => { e.stopPropagation(); onRecordar(appointment) }}>
+                <Icon name="chat" size={12} /> Avisar por WhatsApp
               </Btn>
             )}
-            {appointment.status === 'libre' && !isPast && (
-              <Btn size="sm" onClick={(e) => e.stopPropagation()}>Bloquear</Btn>
-            )}
+            <span
+              className={`flex gap-1.5 shrink-0 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} max-lg:opacity-100`}
+            >
+              {appointment.status === 'confirmado' && (
+                <Btn size="sm" onClick={(e) => { e.stopPropagation(); onCancel(appointment.id) }}>Cancelar</Btn>
+              )}
+              {appointment.status === 'pendiente' && (
+                <Btn size="sm" onClick={(e) => { e.stopPropagation(); onCancel(appointment.id) }}>Cancelar</Btn>
+              )}
+              {appointment.status === 'cancelado' && onReasignar && (
+                <Btn size="sm" onClick={(e) => { e.stopPropagation(); onReasignar(appointment) }}>
+                  <Icon name="plus" size={12} /> Reasignar
+                </Btn>
+              )}
+              {appointment.status === 'libre' && !isPast && (
+                <Btn size="sm" onClick={(e) => e.stopPropagation()}>Bloquear</Btn>
+              )}
+            </span>
           </>
         )}
       </div>
