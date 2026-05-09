@@ -231,7 +231,20 @@ export default function PatientPanel({ appointment, dayAppointments, dayLabel, s
         )}
 
         {total === 0 && !isBlocked ? (
-          <p className="text-[13px] text-text-hint">No hay turnos agendados para este día.</p>
+          /* Friendly empty state — nudges the doctor toward sharing
+             their booking link (rendered as the BookingLinkCard right
+             below) instead of just stating the empty fact. The arrow
+             visually ties the prompt to the link card. */
+          <div className="bg-surface-2 border border-gray-border rounded-[12px] p-4 text-center">
+            <div className="text-[22px] mb-1.5" aria-hidden>📭</div>
+            <div className="text-[13px] font-medium text-text mb-1">
+              Sin turnos todavía
+            </div>
+            <p className="text-[12px] text-text-muted leading-[1.55]">
+              Compartí tu link de turnos para que tus pacientes reserven solos.
+              <span className="block text-text-hint mt-1.5">↓ está abajo, listo para copiar</span>
+            </p>
+          </div>
         ) : total === 0 && isBlocked ? (
           <p className="text-[13px] text-text-hint">Día sin turnos — bloqueado.</p>
         ) : (
