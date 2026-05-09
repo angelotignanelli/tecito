@@ -4,6 +4,19 @@ import { getPublicBaseUrl } from '../../lib/publicUrl'
 import Icon from '../Icon'
 import Btn from '../Btn'
 
+const LONG_DAYS = [
+  'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado',
+]
+
+/** "Viernes 8" from "2026-05-08". Returns null if the input can't be
+ * parsed — caller should fall back to a short label. */
+function longDayLabel(iso?: string): string | null {
+  if (!iso) return null
+  const d = new Date(iso + 'T12:00:00')
+  if (isNaN(d.getTime())) return null
+  return `${LONG_DAYS[d.getDay()]} ${d.getDate()}`
+}
+
 interface Props {
   appointment: Appointment | null
   dayAppointments: Appointment[]
@@ -19,11 +32,9 @@ interface Props {
    * surfaced in the day overview so the link is one glance away from
    * the agenda instead of buried in Mi perfil. */
   bookingCode?: string | null
-  /** Doctor's first name (for pre-filling the WhatsApp share text). */
-  doctorFirstName?: string
 }
 
-export default function PatientPanel({ appointment, dayAppointments, dayLabel, selectedDate, isBlocked, blockReason, onUnblock, onBlockHours, onRecordarTodos, onScheduleAppointment, bookingCode, doctorFirstName }: Props) {
+export default function PatientPanel({ appointment, dayAppointments, dayLabel, selectedDate, isBlocked, blockReason, onUnblock, onBlockHours, onRecordarTodos, onScheduleAppointment, bookingCode }: Props) {
   const [showBlockForm, setShowBlockForm] = useState(false)
   const [showBlockConfirm, setShowBlockConfirm] = useState(false)
   const [blockFrom, setBlockFrom] = useState('09:00')
@@ -217,7 +228,12 @@ export default function PatientPanel({ appointment, dayAppointments, dayLabel, s
           className="text-[22px] mt-1 mb-5 tracking-[-0.02em] text-text capitalize"
           style={{ fontFamily: 'var(--font-serif)' }}
         >
-          {dayLabel}
+          {/* The week strip uses abbreviated names ("Vie 8") for space,
+              but here in the panel header the long form ("Viernes 8")
+              reads more like the doctor's natural mental model. Fall
+              back to the abbreviated dayLabel if we can't parse the
+              date for any reason. */}
+          {longDayLabel(selectedDate) ?? dayLabel}
         </div>
 
         {isBlocked && (
@@ -236,7 +252,7 @@ export default function PatientPanel({ appointment, dayAppointments, dayLabel, s
              URL and the WhatsApp share inside the same card so the
              nudge and the action are one visual unit. */
           bookingCode ? (
-            <EmptyDayShareCard bookingCode={bookingCode} doctorFirstName={doctorFirstName} />
+            <EmptyDayShareCard bookingCode={bookingCode} />
           ) : (
             <div className="bg-surface-2 border border-gray-border rounded-[12px] p-4 text-center">
               <div className="text-[22px] mb-1.5" aria-hidden>📭</div>
@@ -540,10 +556,8 @@ function BlockHoursForm({ dayAppointments, blockFrom, blockTo, showConfirm, onCh
  */
 function EmptyDayShareCard({
   bookingCode,
-  doctorFirstName,
 }: {
   bookingCode: string
-  doctorFirstName?: string
 }) {
   const url = `${getPublicBaseUrl()}/p/${bookingCode}`
   const [copied, setCopied] = useState(false)
@@ -553,11 +567,6 @@ function EmptyDayShareCard({
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
-
-  const intro = doctorFirstName ? `Soy ${doctorFirstName}. ` : ""
-  const shareText = encodeURIComponent(
-    `Hola! ${intro}Si querés sacar un turno conmigo, podés hacerlo desde acá: ${url}`,
-  )
 
   return (
     <div className="bg-surface-2 border border-gray-border rounded-[14px] p-5">
@@ -574,26 +583,21 @@ function EmptyDayShareCard({
         </p>
       </div>
 
-      <div className="bg-surface border border-gray-border rounded-[10px] px-3 py-2.5 mb-2 flex items-center gap-2">
-        <div className="text-[11px] font-mono text-text truncate flex-1" title={url}>
+      {/* URL field — link is the hero, no button inside it. */}
+      <div className="bg-surface border border-gray-border rounded-[10px] px-3 py-2.5 mb-2">
+        <div className="text-[11px] font-mono text-text truncate" title={url}>
           {url}
         </div>
-        <button
-          onClick={handleCopy}
-          className="px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer border border-primary bg-primary text-white hover:bg-[#2F3C2D] transition-colors shrink-0"
-        >
-          {copied ? "¡Copiado!" : "Copiar"}
-        </button>
       </div>
 
-      <a
-        href={`https://wa.me/?text=${shareText}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block w-full text-center px-3 py-2 rounded-[10px] text-[12px] font-medium cursor-pointer bg-primary text-surface hover:bg-[#2F3C2D] transition-colors"
+      {/* Secondary "Copiar" — full width below the link. Outline
+          style (border + transparent bg) so the card stays calm. */}
+      <button
+        onClick={handleCopy}
+        className="block w-full text-center px-3 py-2 rounded-[10px] text-[12px] font-medium cursor-pointer border border-gray-border-2 bg-surface text-text hover:bg-surface-2 transition-colors"
       >
-        💬 Compartir por WhatsApp
-      </a>
+        {copied ? '¡Copiado!' : 'Copiar link'}
+      </button>
     </div>
   )
 }
