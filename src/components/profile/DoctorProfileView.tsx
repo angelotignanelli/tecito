@@ -205,15 +205,8 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
           {/* Multi-location manager */}
           {userId && <LocationsManager userId={userId} />}
 
-          {/* Booking link */}
-          <div className="bg-white border border-gray-border rounded-[10px] p-5 lg:col-span-2">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">🔗</span>
-              <div className="text-[13px] font-semibold">Link para agendar turnos</div>
-            </div>
-            <div className="text-xs text-text-muted mb-4">Compartí este link con tus pacientes. Pueden ver tu perfil, disponibilidad y sacar turno directamente desde el link, sin registrarse.</div>
-            <BookingLink bookingCode={profile?.booking_code || null} />
-          </div>
+          {/* Booking link block removed — lives in the "Mi link" sidebar
+              item now (with WhatsApp / email / copy actions in one modal). */}
 
           {/* Google Calendar / Apple Calendar sync */}
           <div className="bg-white border border-gray-border rounded-[14px] p-5 md:col-span-2">
@@ -330,68 +323,6 @@ function PlanCard({ plan, onOpenPlans }: { plan: PlanId; onOpenPlans?: () => voi
         >
           {isFree ? 'Mejorar plan' : 'Cambiar plan'}
         </button>
-      </div>
-    </div>
-  )
-}
-
-function BookingLink({ bookingCode }: { bookingCode: string | null }) {
-  const [copied, setCopied] = useState(false)
-
-  if (!bookingCode) {
-    return (
-      <div className="text-xs text-text-hint bg-gray-bg rounded-md px-3 py-2.5">
-        El código se genera automáticamente. Recargá la página si no aparece.
-      </div>
-    )
-  }
-
-  const publicUrl = `${getPublicBaseUrl()}/p/${bookingCode}`
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(publicUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const shareText = encodeURIComponent(`Hola! Podés sacar turno conmigo desde acá: ${publicUrl}`)
-
-  return (
-    <div className="space-y-3">
-      <div className="bg-gray-bg rounded-lg px-3 py-2.5 flex items-center gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] text-text-hint uppercase tracking-wide mb-0.5">Tu link de turnos</div>
-          <div className="text-xs font-mono text-text truncate">{publicUrl}</div>
-        </div>
-        <button
-          onClick={handleCopy}
-          className="px-3 py-1.5 rounded-md text-xs cursor-pointer border border-primary bg-primary text-white hover:bg-[#534AB7] transition-colors shrink-0"
-        >
-          {copied ? '¡Copiado!' : 'Copiar'}
-        </button>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <a
-          href={`https://wa.me/?text=${shareText}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs cursor-pointer border border-gray-border bg-white text-text-muted hover:bg-gray-bg transition-colors"
-        >
-          💬 Compartir por WhatsApp
-        </a>
-        <a
-          href={publicUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs cursor-pointer border border-gray-border bg-white text-text-muted hover:bg-gray-bg transition-colors"
-        >
-          🔗 Ver mi página pública
-        </a>
-      </div>
-
-      <div className="text-[10px] text-text-hint">
-        Código único: <span className="font-mono">{bookingCode}</span>
       </div>
     </div>
   )
