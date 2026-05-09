@@ -480,7 +480,7 @@ export default function NewAppointmentModal({
                 <textarea
                   value={detail}
                   onChange={(e) => setDetail(e.target.value)}
-                  placeholder="Ej: seguimiento ansiedad, primera consulta…"
+                  placeholder="Ej: primera consulta, control, seguimiento…"
                   rows={2}
                   className="w-full px-3 py-2.5 rounded-[10px] border border-gray-border bg-surface-2 text-[13px] text-text resize-none focus:border-primary-mid"
                 />

@@ -296,7 +296,7 @@ export default function OnboardingWizard({ firstName, lastName, onComplete }: Pr
                 <div className="text-sm font-medium text-text mb-4">Datos profesionales</div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  <FormField label="Especialidad *" value={data.specialty} placeholder="Ej: Psicóloga" onChange={(v) => update('specialty', v)} />
+                  <FormField label="Especialidad *" value={data.specialty} placeholder="Ej: Cardióloga, Psicóloga, Nutricionista…" onChange={(v) => update('specialty', v)} />
                   <FormField label="Matrícula *" value={data.license} placeholder="Ej: 12.847" onChange={(v) => update('license', v)} />
                 </div>
                 <div className="mb-4">
