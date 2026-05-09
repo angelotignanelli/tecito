@@ -121,43 +121,46 @@ export default function AppointmentCard({
       </div>
 
       {/* Actions
-          The "Avisar por WhatsApp" CTA on pendiente turnos is the
-          single most-important call-to-action in the whole agenda
-          (manual scheduling skips the public-booking notification, so
-          the patient is otherwise unaware). We split it out and force
-          it visible — no hover gate — so the doctor immediately sees
-          they need to act. The rest of the actions stay subtle: visible
-          on hover at desktop, always shown on touch screens. */}
-      <div className="flex gap-1.5 shrink-0">
+          Layout intent: the primary CTA ("Avisar por WhatsApp" for
+          pendiente, "Cancelar" otherwise) sits always at the right
+          edge of the card so cards line up cleanly across the list,
+          regardless of whether secondary actions are visible.
+          Secondary actions (e.g. Cancelar on a pendiente turno) appear
+          to the LEFT of the primary, hover-gated on desktop and
+          always visible on touch. */}
+      <div className="flex gap-1.5 shrink-0 items-center">
         {isPast && (appointment.status === 'confirmado' || appointment.status === 'pendiente') ? (
           <span className="inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full bg-surface-2 text-text-hint" style={{ fontFamily: 'var(--font-mono)' }}>
             Turno pasado
           </span>
         ) : (
           <>
+            {/* Secondary actions — left of primary, hover-gated */}
+            <span
+              className={`flex gap-1.5 shrink-0 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} max-lg:opacity-100`}
+            >
+              {appointment.status === 'pendiente' && (
+                <Btn size="sm" onClick={(e) => { e.stopPropagation(); onCancel(appointment.id) }}>Cancelar</Btn>
+              )}
+            </span>
+
+            {/* Primary action — always anchored to the right edge */}
             {appointment.status === 'pendiente' && (
               <Btn size="sm" variant="primary" onClick={(e) => { e.stopPropagation(); onRecordar(appointment) }}>
                 <Icon name="chat" size={12} /> Avisar por WhatsApp
               </Btn>
             )}
-            <span
-              className={`flex gap-1.5 shrink-0 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} max-lg:opacity-100`}
-            >
-              {appointment.status === 'confirmado' && (
-                <Btn size="sm" onClick={(e) => { e.stopPropagation(); onCancel(appointment.id) }}>Cancelar</Btn>
-              )}
-              {appointment.status === 'pendiente' && (
-                <Btn size="sm" onClick={(e) => { e.stopPropagation(); onCancel(appointment.id) }}>Cancelar</Btn>
-              )}
-              {appointment.status === 'cancelado' && onReasignar && (
-                <Btn size="sm" onClick={(e) => { e.stopPropagation(); onReasignar(appointment) }}>
-                  <Icon name="plus" size={12} /> Reasignar
-                </Btn>
-              )}
-              {appointment.status === 'libre' && !isPast && (
-                <Btn size="sm" onClick={(e) => e.stopPropagation()}>Bloquear</Btn>
-              )}
-            </span>
+            {appointment.status === 'confirmado' && (
+              <Btn size="sm" onClick={(e) => { e.stopPropagation(); onCancel(appointment.id) }}>Cancelar</Btn>
+            )}
+            {appointment.status === 'cancelado' && onReasignar && (
+              <Btn size="sm" onClick={(e) => { e.stopPropagation(); onReasignar(appointment) }}>
+                <Icon name="plus" size={12} /> Reasignar
+              </Btn>
+            )}
+            {appointment.status === 'libre' && !isPast && (
+              <Btn size="sm" onClick={(e) => e.stopPropagation()}>Bloquear</Btn>
+            )}
           </>
         )}
       </div>
