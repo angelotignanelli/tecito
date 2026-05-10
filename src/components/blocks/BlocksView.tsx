@@ -60,7 +60,7 @@ export default function BlocksView({ blocks, onAdd, onRemove }: Props) {
                 // box-sizing + min-w-0 + appearance-none keeps it contained,
                 // and the `[&:invalid]:text-text-hint` rule keeps the
                 // dd/mm/aaaa placeholder visible while the field is empty.
-                className="block w-full max-w-full min-w-0 box-border appearance-none px-3 h-[42px] rounded-[10px] border border-gray-border bg-bg text-[14px] text-text focus:border-primary-mid focus:outline-none [&:invalid]:text-text-hint"
+                className="block w-full max-w-full min-w-0 box-border appearance-none px-3 py-[10px] leading-[1.2] rounded-[10px] border border-gray-border bg-bg text-[14px] text-text focus:border-primary-mid focus:outline-none [&:invalid]:text-text-hint"
                 required
               />
             </div>
@@ -71,7 +71,7 @@ export default function BlocksView({ blocks, onAdd, onRemove }: Props) {
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
                 min={from}
-                className="block w-full max-w-full min-w-0 box-border appearance-none px-3 h-[42px] rounded-[10px] border border-gray-border bg-bg text-[14px] text-text focus:border-primary-mid focus:outline-none [&:invalid]:text-text-hint"
+                className="block w-full max-w-full min-w-0 box-border appearance-none px-3 py-[10px] leading-[1.2] rounded-[10px] border border-gray-border bg-bg text-[14px] text-text focus:border-primary-mid focus:outline-none [&:invalid]:text-text-hint"
                 required
               />
             </div>
@@ -80,7 +80,7 @@ export default function BlocksView({ blocks, onAdd, onRemove }: Props) {
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="block w-full max-w-full min-w-0 box-border px-3 h-[42px] rounded-[10px] border border-gray-border bg-bg text-[14px] text-text focus:border-primary-mid focus:outline-none"
+                className="block w-full max-w-full min-w-0 box-border px-3 py-[10px] leading-[1.2] rounded-[10px] border border-gray-border bg-bg text-[14px] text-text focus:border-primary-mid focus:outline-none"
               >
                 <option>Vacaciones</option>
                 <option>Congreso / Capacitación</option>

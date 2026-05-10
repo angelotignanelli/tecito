@@ -410,7 +410,7 @@ export default function NewAppointmentModal({
                   <select
                     value={newPatientInsurance}
                     onChange={(e) => setNewPatientInsurance(e.target.value)}
-                    className="w-full px-3 h-[42px] rounded-[10px] border border-gray-border bg-surface text-[14px] text-text focus:border-primary-mid focus:outline-none"
+                    className="w-full px-3 py-[10px] leading-[1.2] rounded-[10px] border border-gray-border bg-surface text-[14px] text-text focus:border-primary-mid focus:outline-none"
                   >
                     <option>Particular</option>
                     <option>OSDE</option>
@@ -530,7 +530,7 @@ export default function NewAppointmentModal({
                   // box-border + min-w-0 + appearance-none keeps iOS
                   // Safari's native date control from blowing past the
                   // form column with its intrinsic width.
-                  className="block w-full max-w-full min-w-0 box-border appearance-none px-3 h-[42px] rounded-[10px] border border-gray-border bg-surface-2 text-[14px] text-text focus:border-primary-mid focus:outline-none"
+                  className="block w-full max-w-full min-w-0 box-border appearance-none px-3 py-[10px] leading-[1.2] rounded-[10px] border border-gray-border bg-surface-2 text-[14px] text-text focus:border-primary-mid focus:outline-none"
                 />
               </div>
 
