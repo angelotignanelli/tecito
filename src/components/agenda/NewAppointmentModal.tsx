@@ -278,13 +278,19 @@ export default function NewAppointmentModal({
           </button>
           <div className="flex-1 min-w-0">
             <h2
-              className="text-[20px] sm:text-[24px] leading-none tracking-[-0.02em] text-text m-0 truncate"
+              // leading-none collapsed the bounding box of the serif
+              // title and made the cap-height sit visually high in
+              // its row, reading as "pulled up" above the Paso 2 de 2
+              // eyebrow underneath. leading-[1.15] gives the title
+              // enough breathing room above the cap-height to balance
+              // optically with the back-arrow on its left.
+              className="text-[20px] sm:text-[24px] leading-[1.15] tracking-[-0.02em] text-text m-0 truncate"
               style={{ fontFamily: 'var(--font-serif)' }}
             >
               {title ?? 'Nuevo turno'}.
             </h2>
             {!prefilledPatient && (
-              <div className="text-[10px] sm:text-[11px] text-text-hint mt-1.5 uppercase tracking-[0.12em]" style={{ fontFamily: 'var(--font-mono)' }}>
+              <div className="text-[10px] sm:text-[11px] text-text-hint mt-1 uppercase tracking-[0.12em]" style={{ fontFamily: 'var(--font-mono)' }}>
                 Paso {step === 'patient' ? '1' : '2'} de 2
               </div>
             )}
