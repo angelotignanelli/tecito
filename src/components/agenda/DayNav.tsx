@@ -34,7 +34,7 @@ export default function DayNav({ days, selectedDate, blockedDates, onSelect, onP
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
         {days.map((d) => {
           const dObj = new Date(d.date + 'T12:00:00')
           const dayNum = dObj.getDate()
@@ -47,7 +47,7 @@ export default function DayNav({ days, selectedDate, blockedDates, onSelect, onP
             <button
               key={d.date}
               onClick={() => onSelect(d.date)}
-              className={`text-left px-3.5 py-3 rounded-[10px] cursor-pointer border transition-colors min-h-[5.25rem] ${
+              className={`text-center sm:text-left px-1.5 sm:px-3.5 py-2 sm:py-3 rounded-[10px] cursor-pointer border transition-colors lg:min-h-[5.25rem] ${
                 isSelected
                   ? 'bg-primary text-surface border-primary'
                   : isBlocked
@@ -57,24 +57,29 @@ export default function DayNav({ days, selectedDate, blockedDates, onSelect, onP
                       : 'bg-surface border-gray-border text-text hover:bg-surface-2'
               }`}
             >
-              <div className={`text-[10px] uppercase tracking-[0.1em] ${isSelected ? 'opacity-60' : 'opacity-70'}`}>
+              <div className={`text-[9px] sm:text-[10px] uppercase tracking-[0.1em] ${isSelected ? 'opacity-60' : 'opacity-70'}`}>
                 {dow}
               </div>
               <div
-                className="text-[22px] mt-0.5 tracking-[-0.02em] leading-[1.05]"
+                className="text-[18px] sm:text-[22px] mt-0.5 tracking-[-0.02em] leading-[1.05]"
                 style={{ fontFamily: 'var(--font-serif)' }}
               >
                 {dayNum}
               </div>
-              {isBlocked && !isSelected ? (
-                <div className="text-[10px] mt-1 opacity-75" style={{ fontFamily: 'var(--font-mono)' }}>
-                  bloqueado
-                </div>
-              ) : count != null && count > 0 ? (
-                <div className={`text-[10px] mt-1 ${isSelected ? 'opacity-65' : 'opacity-65'}`} style={{ fontFamily: 'var(--font-mono)' }}>
-                  {count} {count === 1 ? 'turno' : 'turnos'}
-                </div>
-              ) : null}
+              {/* Mobile keeps the day pill clean — just dow + number.
+                  The bloqueado / turnos count is desktop-only since the
+                  mobile hero already carries that information. */}
+              <div className="hidden lg:block">
+                {isBlocked && !isSelected ? (
+                  <div className="text-[10px] mt-1 opacity-75" style={{ fontFamily: 'var(--font-mono)' }}>
+                    bloqueado
+                  </div>
+                ) : count != null && count > 0 ? (
+                  <div className={`text-[10px] mt-1 ${isSelected ? 'opacity-65' : 'opacity-65'}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                    {count} {count === 1 ? 'turno' : 'turnos'}
+                  </div>
+                ) : null}
+              </div>
             </button>
           )
         })}
