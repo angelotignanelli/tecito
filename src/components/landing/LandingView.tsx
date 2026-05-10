@@ -97,7 +97,11 @@ function Nav({
         </div>
         <div className="flex gap-2 sm:gap-2.5 items-center">
           <button onClick={onGoToLogin}><BtnGhost>Iniciar sesión</BtnGhost></button>
-          <button onClick={onGoToRegister}><BtnPrimary withArrow>Probar gratis</BtnPrimary></button>
+          {/* "Probar gratis" lives in the hero CTA + further down the
+              page on mobile, so the header doesn't need to compete for
+              space with it. Keep it from sm+ where the header has room
+              for both. */}
+          <button onClick={onGoToRegister} className="hidden sm:inline-flex"><BtnPrimary withArrow>Probar gratis</BtnPrimary></button>
         </div>
       </div>
     </nav>
