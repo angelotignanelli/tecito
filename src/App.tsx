@@ -707,18 +707,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                     />
                   </div>
 
-                  {/* Próximo turno card — placed *after* the DayNav so
-                      the day selector lives above the fold on mobile.
-                      The card sits at the top of the day's content,
-                      right above the turno list. */}
-                  <MobileNextTurnoCard
-                    appointments={filteredAppointments}
-                    selectedDate={selectedDate}
-                    doctorFirstName={profile?.first_name ?? undefined}
-                    onRecordar={(a) => setRemindersMode(a)}
-                    onSelect={(a) => setSelectedId(a.id)}
-                  />
-
                   {/* Stat strip — 4 cols inside single card with dividers.
                       Hidden on mobile: the MobileAgendaHero already
                       surfaces total + pendientes inside its narrative
@@ -759,6 +747,18 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                       <Btn size="sm" variant="danger" onClick={handleUnblockDate}>Desbloquear</Btn>
                     </div>
                   )}
+
+                  {/* Próximo turno card — sits below the blocked-day
+                      banner (if any) and the stat strip on desktop,
+                      right above the turno list. On mobile this is
+                      the "first hint of action" for the selected day. */}
+                  <MobileNextTurnoCard
+                    appointments={filteredAppointments}
+                    selectedDate={selectedDate}
+                    doctorFirstName={profile?.first_name ?? undefined}
+                    onRecordar={(a) => setRemindersMode(a)}
+                    onSelect={(a) => setSelectedId(a.id)}
+                  />
 
                   {/* Appointment list */}
                   <AppointmentList
