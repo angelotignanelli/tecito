@@ -603,7 +603,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       {activeView === 'agenda' && (
         <>
           <div className="flex-1 flex flex-col h-screen overflow-hidden bg-bg">
-            <div className="px-5 sm:px-10 pt-6 sm:pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
+            <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
               {/* Mobile-only hero (greeting + próximo turno + stats).
                   Replaces the desktop PageHeader on small screens. */}
               <MobileAgendaHero

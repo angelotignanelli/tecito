@@ -29,7 +29,7 @@ export default function OrgAdminView({ org, userId, onOrgUpdated }: Props) {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg">
-      <div className="px-8 sm:px-10 pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
+      <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
         <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
           <div>
             <h1 className="text-[36px] sm:text-[44px] font-normal text-text leading-[1.05] tracking-[-0.03em] m-0" style={{ fontFamily: 'var(--font-serif)' }}>

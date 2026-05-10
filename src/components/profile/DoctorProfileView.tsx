@@ -131,7 +131,7 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg">
-      <div className="px-8 sm:px-10 pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
+      <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
         <PageHeader
           title="Mi perfil."
           subtitle="Datos profesionales y configuración de consultorio."
@@ -332,15 +332,20 @@ function Field({ label, value, field, editing, onChange, prefix }: {
   label: string; value: string; field: string; editing: boolean; onChange: (field: any, value: string) => void; prefix?: string
 }) {
   return (
-    <div>
+    // min-w-0 lets the field shrink below its content's intrinsic width
+    // when sitting inside a 2-col grid on a narrow viewport (e.g. an
+    // email like "miemail.profesional@gmail.com" was pushing the column
+    // wider than its slot, breaking the grid). The break-words on the
+    // display variant handles the same case for read-only mode.
+    <div className="min-w-0">
       <div className="text-[11px] text-text-hint uppercase tracking-wide mb-1">{label}</div>
       {editing ? (
-        <div className="flex items-center">
-          {prefix && <span className="text-sm text-text-muted mr-1">{prefix}</span>}
-          <input type="text" value={value} onChange={(e) => onChange(field, e.target.value)} className="w-full px-3 py-2 rounded-md border border-gray-border text-sm focus:outline-none focus:border-primary-mid focus:ring-1 focus:ring-primary-mid" />
+        <div className="flex items-center min-w-0">
+          {prefix && <span className="text-sm text-text-muted mr-1 shrink-0">{prefix}</span>}
+          <input type="text" value={value} onChange={(e) => onChange(field, e.target.value)} className="w-full min-w-0 px-3 py-2 rounded-md border border-gray-border text-sm focus:outline-none focus:border-primary-mid focus:ring-1 focus:ring-primary-mid" />
         </div>
       ) : (
-        <div className="text-sm text-text">{prefix}{value || '—'}</div>
+        <div className="text-sm text-text break-words">{prefix}{value || '—'}</div>
       )}
     </div>
   )
