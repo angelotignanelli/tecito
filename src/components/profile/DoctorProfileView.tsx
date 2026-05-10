@@ -290,7 +290,10 @@ function PlanCard({ plan, onOpenPlans }: { plan: PlanId; onOpenPlans?: () => voi
           : 'bg-primary-light border-primary-mid'
       }`}
     >
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      {/* On mobile the row stacks: plan info up top, CTA below as a
+          full-width tap target. On sm+ the button sits to the right
+          of the text as before. */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
           <div
             className={`text-[10px] uppercase tracking-[0.12em] mb-1 ${
@@ -300,7 +303,7 @@ function PlanCard({ plan, onOpenPlans }: { plan: PlanId; onOpenPlans?: () => voi
           >
             Tu plan actual
           </div>
-          <div className="flex items-baseline gap-2.5">
+          <div className="flex items-baseline gap-2.5 flex-wrap">
             <span
               className={`text-[22px] italic tracking-[-0.015em] ${isFree ? 'text-text' : 'text-primary'}`}
               style={{ fontFamily: 'var(--font-serif)' }}
@@ -319,7 +322,7 @@ function PlanCard({ plan, onOpenPlans }: { plan: PlanId; onOpenPlans?: () => voi
         </div>
         <button
           onClick={onOpenPlans}
-          className="shrink-0 px-4 py-2 rounded-[8px] text-[12px] font-medium cursor-pointer transition-colors bg-primary text-surface hover:bg-[#2F3C2D] border border-primary"
+          className="w-full sm:w-auto sm:shrink-0 px-4 py-2.5 sm:py-2 rounded-[10px] sm:rounded-[8px] text-[13px] sm:text-[12px] font-medium cursor-pointer transition-colors bg-primary text-surface hover:bg-[#2F3C2D] border border-primary"
         >
           {isFree ? 'Mejorar plan' : 'Cambiar plan'}
         </button>
