@@ -211,11 +211,11 @@ export default function NewAppointmentModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30"
+      className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 bg-black/30"
       onClick={onClose}
     >
       <div
-        className="bg-surface rounded-[16px] border border-gray-border shadow-[0_20px_60px_rgba(0,0,0,0.15)] w-full max-w-[520px] max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-surface sm:rounded-[16px] sm:border sm:border-gray-border sm:shadow-[0_20px_60px_rgba(0,0,0,0.15)] w-full sm:max-w-[520px] h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

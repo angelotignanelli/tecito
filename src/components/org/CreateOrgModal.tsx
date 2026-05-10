@@ -39,8 +39,8 @@ export default function CreateOrgModal({ onClose, onCreate }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-[10px] border border-gray-border w-full max-w-[420px] p-6" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/30 flex items-stretch sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
+      <div className="bg-white sm:rounded-[10px] sm:border sm:border-gray-border w-full sm:max-w-[420px] h-full sm:h-auto p-6 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="text-lg font-semibold mb-1">Crear organizacion</div>
         <div className="text-sm text-text-muted mb-5">Arma tu consultorio y sumá otros medicos</div>
 
