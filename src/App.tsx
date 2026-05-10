@@ -697,8 +697,12 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                     />
                   </div>
 
-                  {/* Stat strip — 4 cols inside single card with dividers */}
-                  <div className="bg-surface border border-gray-border rounded-[12px] overflow-hidden mb-5 grid grid-cols-4 divide-x divide-gray-border">
+                  {/* Stat strip — 4 cols inside single card with dividers.
+                      Hidden on mobile: the MobileAgendaHero already
+                      surfaces total + pendientes inside its narrative
+                      (e.g. "Tenés 3 turnos, 1 sin avisar"), so the strip
+                      was redundant noise on phones. */}
+                  <div className="hidden lg:grid bg-surface border border-gray-border rounded-[12px] overflow-hidden mb-5 grid-cols-4 divide-x divide-gray-border">
                     {[
                       { label: 'Total', value: filteredAppointments.length, dot: 'hint' as const },
                       { label: 'Confirmados', value: confirmadosCount, dot: 'teal' as const },
