@@ -103,6 +103,21 @@ input:focus, textarea:focus, select:focus {
   outline: none;
 }
 
+/* Stop iOS Safari from auto-zooming when the user focuses any input.
+ *
+ * Safari decides "this text is too small to read" and zooms the entire
+ * viewport whenever a focused input/textarea/select has a computed
+ * font-size below 16px. The whole layout shifts and the user has to
+ * manually pinch-zoom out to find the rest of the form. We keep our
+ * Tailwind text-[13px] / text-[14px] visual tokens on desktop, but
+ * floor every interactive form control to 16px below the lg breakpoint
+ * (where the soft keyboard actually shows up). */
+@media (max-width: 1023px) {
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
 /* A11y: visually hidden but accessible to screen readers and crawlers */
 .sr-only {
   position: absolute;

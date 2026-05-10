@@ -307,7 +307,11 @@ export default function NewAppointmentModal({
                 />
                 <input
                   type="text"
-                  autoFocus
+                  // No autoFocus on purpose: on mobile this is a full
+                  // section view, and auto-popping the keyboard on
+                  // mount pushes the existing-patient list off-screen
+                  // and disorients the user. They tap the field when
+                  // they actually want to type.
                   placeholder="Buscar paciente o escribir un nombre nuevo…"
                   value={patientSearch}
                   onChange={(e) => {
