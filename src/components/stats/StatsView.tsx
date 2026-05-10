@@ -149,8 +149,8 @@ export default function StatsView({ appointments, patients }: Props) {
   const hasData = appointments.length > 0 || patients.length > 0
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg">
-      <div className="px-4 sm:px-10 pt-6 sm:pt-8 overflow-y-auto flex-1 pb-28 lg:pb-10 scrollbar-hide">
+    <div className="bg-bg lg:flex-1 lg:flex lg:flex-col lg:h-full lg:overflow-hidden">
+      <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-28 lg:pb-10 lg:overflow-y-auto lg:flex-1 lg:scrollbar-hide">
         <PageHeader
           title="Estadísticas."
           subtitle="Resumen de tu práctica profesional."

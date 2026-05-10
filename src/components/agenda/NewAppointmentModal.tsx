@@ -218,11 +218,16 @@ export default function NewAppointmentModal({
 
   if (!open) return null
 
-  // SECTION MODE — full-bleed page. No overlay, no fixed positioning,
-  // sits inline in the app's view router. Used on mobile.
+  // SECTION MODE — full-bleed page used on mobile. The Dashboard
+  // shell now uses document scroll on mobile (no h-dvh on the parent),
+  // so this section has to define its own viewport height to make the
+  // sticky footer pattern work. We pin it as a fixed full-screen layer
+  // so it overlays whatever view was previously active, behaves like a
+  // real route, and the MobileNav (which we hide while nuevo-turno is
+  // active) doesn't fight for the same bottom space.
   if (mode === 'section') {
     return (
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg">
+      <div className="fixed inset-0 z-40 flex flex-col h-dvh overflow-hidden bg-bg">
         {renderInner()}
       </div>
     )
