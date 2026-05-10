@@ -64,6 +64,7 @@ export default function RegisterView({ onRegisterSuccess, onGoToLogin }: Props) 
   if (step === 'verify') {
     return (
       <AuthShell>
+        {/* Heading anchored to the top on mobile. */}
         <div className="mb-7">
           <div className="w-12 h-12 rounded-full bg-primary-light text-primary grid place-items-center mb-4">
             <Icon name="email" size={20} />
@@ -80,26 +81,29 @@ export default function RegisterView({ onRegisterSuccess, onGoToLogin }: Props) 
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onGoToLogin}
-          className="w-full py-[12px] rounded-[10px] text-[14px] font-medium cursor-pointer bg-primary text-surface hover:bg-[#2F3C2D] transition-colors"
-        >
-          Ir a iniciar sesión
-        </button>
-        <button
-          type="button"
-          onClick={() => setStep('form')}
-          className="w-full py-[12px] mt-2 rounded-[10px] text-[13px] font-medium cursor-pointer bg-surface border border-gray-border-2 text-text-muted hover:bg-surface-2 transition-colors"
-        >
-          Volver al formulario
-        </button>
+        {/* Body — vertically centered on mobile, block on desktop. */}
+        <div className="flex-1 md:flex-none flex flex-col justify-center md:block">
+          <button
+            type="button"
+            onClick={onGoToLogin}
+            className="w-full py-[12px] rounded-[10px] text-[14px] font-medium cursor-pointer bg-primary text-surface hover:bg-[#2F3C2D] transition-colors"
+          >
+            Ir a iniciar sesión
+          </button>
+          <button
+            type="button"
+            onClick={() => setStep('form')}
+            className="w-full py-[12px] mt-2 rounded-[10px] text-[13px] font-medium cursor-pointer bg-surface border border-gray-border-2 text-text-muted hover:bg-surface-2 transition-colors"
+          >
+            Volver al formulario
+          </button>
 
-        <div
-          className="mt-8 pt-5 border-t border-gray-border text-[11px] text-text-hint uppercase tracking-[0.12em]"
-          style={{ fontFamily: 'var(--font-mono)' }}
-        >
-          no te llegó nada? <a className="text-primary cursor-pointer ml-1 normal-case tracking-normal">reenviar email</a>
+          <div
+            className="mt-8 pt-5 border-t border-gray-border text-[11px] text-text-hint uppercase tracking-[0.12em]"
+            style={{ fontFamily: 'var(--font-mono)' }}
+          >
+            no te llegó nada? <a className="text-primary cursor-pointer ml-1 normal-case tracking-normal">reenviar email</a>
+          </div>
         </div>
       </AuthShell>
     )
@@ -107,6 +111,9 @@ export default function RegisterView({ onRegisterSuccess, onGoToLogin }: Props) 
 
   return (
     <AuthShell>
+      {/* Heading anchored to the top on mobile (AuthShell's mobile
+          form area is flex-col), block-level on desktop where the
+          whole card is centered as a unit. */}
       <div className="mb-7">
         <h1
           className="text-[36px] font-normal tracking-[-0.028em] text-text m-0 leading-[1.1]"
@@ -117,6 +124,11 @@ export default function RegisterView({ onRegisterSuccess, onGoToLogin }: Props) 
         <p className="text-[13px] text-text-muted mt-2">Gratis hasta 10 pacientes · sin tarjeta.</p>
       </div>
 
+      {/* Body — flex-1 + justify-center on mobile so the inputs sit at
+          the optical center between the heading and the brand footer.
+          On md+ we collapse those modifiers so the layout is identical
+          to before. */}
+      <div className="flex-1 md:flex-none flex flex-col justify-center md:block">
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="text-[12px] text-text-muted font-medium mb-1.5 block">Nombre y apellido</label>
@@ -179,6 +191,7 @@ export default function RegisterView({ onRegisterSuccess, onGoToLogin }: Props) 
         >
           Iniciá sesión
         </button>
+      </div>
       </div>
     </AuthShell>
   )
