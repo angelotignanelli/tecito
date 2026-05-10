@@ -522,7 +522,10 @@ export default function NewAppointmentModal({
                   type="date"
                   value={date}
                   onChange={(e) => { setDate(e.target.value); setTime('') }}
-                  className="w-full px-3 py-2.5 rounded-[10px] border border-gray-border bg-surface-2 text-[13px] text-text focus:border-primary-mid"
+                  // box-border + min-w-0 + appearance-none keeps iOS
+                  // Safari's native date control from blowing past the
+                  // form column with its intrinsic width.
+                  className="block w-full max-w-full min-w-0 box-border appearance-none px-3 h-[42px] rounded-[10px] border border-gray-border bg-surface-2 text-[14px] text-text focus:border-primary-mid focus:outline-none"
                 />
               </div>
 
@@ -646,9 +649,10 @@ export default function NewAppointmentModal({
           }`}
           style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
         >
-          {step === 'details' && !prefilledPatient && (
-            <Btn onClick={() => setStep('patient')}>← Volver</Btn>
-          )}
+          {/* "Volver" was removed: the header back-arrow already
+              handles it on mobile, and the "Cambiar" link on the
+              selected-patient card covers the same intent on desktop.
+              Two redundant ways out of step 2 was crowding the footer. */}
           <div className="flex-1" />
           <Btn onClick={onClose}>Cancelar</Btn>
           {step === 'patient' ? (
@@ -656,6 +660,7 @@ export default function NewAppointmentModal({
               variant="primary"
               disabled={!selectedPatient && !(isNewPatient && patientSearch.trim().length >= 2)}
               onClick={() => setStep('details')}
+              className="px-5"
             >
               Continuar →
             </Btn>
@@ -664,6 +669,7 @@ export default function NewAppointmentModal({
               variant="primary"
               disabled={!canSave || saving}
               onClick={handleSave}
+              className="px-5"
             >
               {saving ? 'Guardando…' : 'Crear turno'}
             </Btn>
