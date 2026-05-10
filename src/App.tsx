@@ -7,6 +7,7 @@ import Sidebar, { type View } from './components/layout/Sidebar'
 import MobileNav from './components/layout/MobileNav'
 import DayNav from './components/agenda/DayNav'
 import AppointmentList from './components/agenda/AppointmentList'
+import MobileAgendaHero from './components/agenda/MobileAgendaHero'
 import PatientPanel from './components/patient/PatientPanel'
 import PatientsView from './components/patients/PatientsView'
 import PatientDetailPanel from './components/patients/PatientDetailPanel'
@@ -602,7 +603,18 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       {activeView === 'agenda' && (
         <>
           <div className="flex-1 flex flex-col h-screen overflow-hidden bg-bg">
-            <div className="px-8 sm:px-10 pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
+            <div className="px-5 sm:px-10 pt-6 sm:pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
+              {/* Mobile-only hero (greeting + próximo turno + stats).
+                  Replaces the desktop PageHeader on small screens. */}
+              <MobileAgendaHero
+                appointments={filteredAppointments}
+                selectedDate={selectedDate}
+                doctorFirstName={profile?.first_name ?? undefined}
+                onRecordar={(a) => setRemindersMode(a)}
+                onSelect={(a) => setSelectedId(a.id)}
+              />
+
+              <div className="hidden lg:block">
               <PageHeader
                 title="Agenda."
                 subtitle={<span className="capitalize">{heroSubtitle} · {filteredAppointments.length} {filteredAppointments.length === 1 ? 'turno programado' : 'turnos programados'}</span>}
@@ -641,6 +653,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                   </>
                 }
               />
+              </div>
 
               {agendaMode === 'week' ? (
                 <>
@@ -743,6 +756,17 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             onScheduleAppointment={handleScheduleFromPatient}
             bookingCode={profile?.booking_code ?? null}
           />
+
+          {/* Mobile-only FAB for "+ Nuevo turno". Sits above the
+              MobileNav tab bar (which has bottom-0 z-50). */}
+          <button
+            type="button"
+            onClick={() => { setModalIntent('new'); setShowNewAppointment(true) }}
+            aria-label="Nuevo turno"
+            className="lg:hidden fixed bottom-[78px] right-5 w-14 h-14 rounded-full bg-primary text-surface grid place-items-center cursor-pointer shadow-[0_8px_24px_rgba(59,74,56,0.32)] z-40 active:scale-95 transition-transform"
+          >
+            <Icon name="plus" size={22} stroke={2} />
+          </button>
         </>
       )}
 
@@ -966,7 +990,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         locations={locations}
       />
 
-      <MobileNav activeView={activeView} onNavigate={handleNavigate} />
+      <MobileNav
+        activeView={activeView}
+        onNavigate={handleNavigate}
+        onOpenMyLink={profile?.booking_code ? () => setShowMyLink(true) : undefined}
+      />
     </div>
   )
 }
