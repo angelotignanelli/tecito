@@ -72,9 +72,36 @@ export default function AuthShell({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      {/* Form right */}
-      <div className="flex-1 flex items-start md:items-center justify-center p-6 md:p-10 pt-8 md:pt-10 overflow-y-auto">
-        <div className="w-full max-w-[400px]">{children}</div>
+      {/* Form right.
+          Mobile (< md): flex-col so we can pin a discreet brand footer
+          to the bottom of the screen, filling the dead space below the
+          form once the editorial sage column was hidden.
+          md+: classic centered card, no footer (the sage column on the
+          left already carries the brand). */}
+      <div className="flex-1 flex flex-col md:flex-row md:items-center justify-center md:p-10 overflow-y-auto">
+        <div className="flex-1 md:flex-none flex items-start md:items-center justify-center w-full px-6 pt-8 md:p-0">
+          <div className="w-full max-w-[400px]">{children}</div>
+        </div>
+
+        {/* Mobile-only footer — small editorial touch + tech credibility
+            line so the bottom of the screen has weight without
+            distracting from the form above. */}
+        <footer className="md:hidden px-6 pb-7 pt-10 text-center">
+          <p
+            className="text-[13px] text-text-muted italic leading-[1.5]"
+            style={{ fontFamily: 'var(--font-serif)' }}
+          >
+            El consultorio se administra <span className="text-primary">solo.</span>
+          </p>
+          <div
+            className="mt-4 flex justify-center gap-4 text-[10px] text-text-hint uppercase tracking-[0.12em]"
+            style={{ fontFamily: 'var(--font-mono)' }}
+          >
+            <span>v 2.4</span>
+            <span>·</span>
+            <span>hecho en argentina</span>
+          </div>
+        </footer>
       </div>
     </div>
   )
