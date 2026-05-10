@@ -20,6 +20,14 @@ interface Props {
   prefilledPatient?: Patient | null
   /** Optional title override for the header (e.g. "Reasignar turno") */
   title?: string
+  /**
+   * Presentation mode.
+   * - `'modal'` (default) → fixed overlay with backdrop, used on desktop.
+   * - `'section'` → renders inline as a full-screen view, no overlay,
+   *   participates in the app's view routing. Used on mobile so the
+   *   flow feels like a real page (back button works, no scrim).
+   */
+  mode?: 'modal' | 'section'
   onCreateAppointment: (input: {
     patient_id: string | null
     patient_name: string
@@ -44,6 +52,7 @@ export default function NewAppointmentModal({
   defaultDuration,
   prefilledPatient,
   title,
+  mode = 'modal',
   onCreateAppointment,
   onCreatePatient,
 }: Props) {
@@ -209,33 +218,75 @@ export default function NewAppointmentModal({
 
   if (!open) return null
 
+  // SECTION MODE — full-bleed page. No overlay, no fixed positioning,
+  // sits inline in the app's view router. Used on mobile.
+  if (mode === 'section') {
+    return (
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg">
+        {renderInner()}
+      </div>
+    )
+  }
+
+  // MODAL MODE — fixed overlay + centered card. Used on desktop.
   return (
     <div
-      className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 bg-black/30"
+      className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 sm:bg-black/30 bg-bg"
       onClick={onClose}
     >
       <div
         className="bg-surface sm:rounded-[16px] sm:border sm:border-gray-border sm:shadow-[0_20px_60px_rgba(0,0,0,0.15)] w-full sm:max-w-[520px] h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="px-6 pt-5 pb-4 border-b border-gray-border flex items-center justify-between shrink-0">
-          <div>
+        {renderInner()}
+      </div>
+    </div>
+  )
+
+  // Inner content shared by both modes. We hoist it here so the JSX
+  // tree can stay flat above and we don't duplicate the 300+ lines of
+  // form markup. Defined as a function so it captures all the closure
+  // state (step, selectedPatient, etc.) without prop drilling.
+  function renderInner() {
+    return (
+      <>
+        {/* Header — back arrow on mobile (acts like a section navigation),
+            X on desktop (acts like a modal close). */}
+        <div
+          className="px-4 sm:px-6 pt-3 sm:pt-5 pb-4 border-b border-gray-border flex items-center gap-3 shrink-0"
+          style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}
+        >
+          <button
+            onClick={() => {
+              if (step === 'details' && !prefilledPatient) {
+                // On mobile the back arrow first walks back to the patient
+                // step; tap it again on step 1 to close.
+                setStep('patient')
+              } else {
+                onClose()
+              }
+            }}
+            className="sm:hidden w-9 h-9 -ml-1 rounded-full grid place-items-center cursor-pointer text-text active:bg-surface-2"
+            aria-label="Volver"
+          >
+            <Icon name="chevL" size={16} stroke={2} />
+          </button>
+          <div className="flex-1 min-w-0">
             <h2
-              className="text-[24px] leading-none tracking-[-0.02em] text-text m-0"
+              className="text-[20px] sm:text-[24px] leading-none tracking-[-0.02em] text-text m-0 truncate"
               style={{ fontFamily: 'var(--font-serif)' }}
             >
               {title ?? 'Nuevo turno'}.
             </h2>
             {!prefilledPatient && (
-              <div className="text-[11px] text-text-hint mt-1.5 uppercase tracking-[0.12em]" style={{ fontFamily: 'var(--font-mono)' }}>
+              <div className="text-[10px] sm:text-[11px] text-text-hint mt-1.5 uppercase tracking-[0.12em]" style={{ fontFamily: 'var(--font-mono)' }}>
                 Paso {step === 'patient' ? '1' : '2'} de 2
               </div>
             )}
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-surface-2 grid place-items-center cursor-pointer text-text-hint"
+            className="hidden sm:grid w-8 h-8 rounded-full hover:bg-surface-2 place-items-center cursor-pointer text-text-hint"
           >
             <Icon name="x" size={14} />
           </button>
@@ -269,7 +320,7 @@ export default function NewAppointmentModal({
               </div>
 
               {/* Existing patient list */}
-              <div className="max-h-[240px] overflow-y-auto scrollbar-hide flex flex-col gap-1">
+              <div className="overflow-y-auto scrollbar-hide flex flex-col gap-1 sm:max-h-[240px]">
                 {filteredPatients.slice(0, 12).map((p) => {
                   const active = selectedPatient?.name === p.name
                   return (
@@ -278,6 +329,15 @@ export default function NewAppointmentModal({
                       onClick={() => {
                         setSelectedPatient(p)
                         setIsNewPatient(false)
+                        // Auto-advance to step 2 on tap. Without this, on
+                        // mobile the soft keyboard from the search input
+                        // hides the "Continuar" button in the footer and
+                        // the user feels stuck. Tapping a patient is a
+                        // strong intent signal — no need to confirm.
+                        // Blur the search first so the keyboard dismisses
+                        // before the next step renders.
+                        ;(document.activeElement as HTMLElement | null)?.blur?.()
+                        setStep('details')
                       }}
                       className={`text-left flex items-center gap-3 px-3 py-2.5 rounded-[10px] border cursor-pointer transition-colors ${
                         active
@@ -334,14 +394,14 @@ export default function NewAppointmentModal({
               )}
 
               {isNewPatient && (
-                <div className="mt-4 bg-surface-2 border border-gray-border rounded-[10px] p-3.5">
+                <div className="mt-4 bg-surface-2 border border-gray-border rounded-[12px] p-3.5">
                   <label className="block text-[10px] text-text-hint uppercase tracking-[0.12em] mb-1.5" style={{ fontFamily: 'var(--font-mono)' }}>
                     Obra social
                   </label>
                   <select
                     value={newPatientInsurance}
                     onChange={(e) => setNewPatientInsurance(e.target.value)}
-                    className="w-full px-3 py-2 rounded-[8px] border border-gray-border bg-surface text-[13px] text-text focus:border-primary-mid"
+                    className="w-full px-3 h-[42px] rounded-[10px] border border-gray-border bg-surface text-[14px] text-text focus:border-primary-mid focus:outline-none"
                   >
                     <option>Particular</option>
                     <option>OSDE</option>
@@ -351,6 +411,20 @@ export default function NewAppointmentModal({
                     <option>PAMI</option>
                     <option>Otra</option>
                   </select>
+                  {/* Inline advance CTA so the user can reach step 2 without
+                      hunting for the footer button (keyboard / safe-area
+                      can hide it on mobile). */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      ;(document.activeElement as HTMLElement | null)?.blur?.()
+                      setStep('details')
+                    }}
+                    disabled={patientSearch.trim().length < 2}
+                    className="mt-3 w-full px-4 py-3 rounded-[10px] bg-primary text-surface text-[14px] font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Continuar →
+                  </button>
                 </div>
               )}
             </>
@@ -557,8 +631,17 @@ export default function NewAppointmentModal({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-border flex items-center justify-between gap-2 shrink-0">
+        {/* Footer — sticky bottom with safe-area pad on mobile so the
+            primary CTA is never covered by the iOS home indicator. On
+            step 1 we hide the footer on mobile entirely: tapping a
+            patient already auto-advances and the inline "Continuar"
+            inside the new-patient panel handles that path too. */}
+        <div
+          className={`px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-border flex items-center justify-between gap-2 shrink-0 bg-surface ${
+            step === 'patient' ? 'hidden sm:flex' : 'flex'
+          }`}
+          style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
+        >
           {step === 'details' && !prefilledPatient && (
             <Btn onClick={() => setStep('patient')}>← Volver</Btn>
           )}
@@ -582,7 +665,7 @@ export default function NewAppointmentModal({
             </Btn>
           )}
         </div>
-      </div>
-    </div>
-  )
+      </>
+    )
+  }
 }

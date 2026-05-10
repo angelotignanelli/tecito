@@ -35,6 +35,7 @@ import PageHeader from './components/PageHeader'
 import NewAppointmentModal from './components/agenda/NewAppointmentModal'
 import RemindersModal from './components/agenda/RemindersModal'
 import MyLinkModal from './components/share/MyLinkModal'
+import MyLinkSection from './components/share/MyLinkSection'
 
 type AuthScreen = 'loading' | 'landing' | 'login' | 'register' | 'reset-password' | 'onboarding' | 'join-org' | 'app' | 'public-booking' | 'not-found'
 
@@ -317,6 +318,31 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [showNewAppointment, setShowNewAppointment] = useState(false)
   const [reasignarFor, setReasignarFor] = useState<Patient | null>(null)
   const [modalIntent, setModalIntent] = useState<'new' | 'reasignar' | 'schedule-for-patient'>('new')
+
+  /** Centralized entry point for the "Nuevo turno" flow. On mobile we
+   * route to the dedicated `nuevo-turno` view (full-screen section,
+   * back button works). On desktop we keep the floating modal so the
+   * user doesn't lose their agenda context. */
+  const openNewAppointment = (config: {
+    patient?: Patient | null
+    intent?: 'new' | 'reasignar' | 'schedule-for-patient'
+  } = {}) => {
+    setReasignarFor(config.patient ?? null)
+    setModalIntent(config.intent ?? 'new')
+    const isDesktop = typeof window !== 'undefined'
+      && window.matchMedia('(min-width: 1024px)').matches
+    if (isDesktop) {
+      setShowNewAppointment(true)
+    } else {
+      setActiveView('nuevo-turno')
+    }
+  }
+  const closeNewAppointment = () => {
+    setShowNewAppointment(false)
+    setReasignarFor(null)
+    setModalIntent('new')
+    if (activeView === 'nuevo-turno') setActiveView('agenda')
+  }
   const [remindersMode, setRemindersMode] = useState<'day' | Appointment | null>(null)
 
   // Load user ID
@@ -470,9 +496,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       tags: [],
       history: [],
     }
-    setReasignarFor(patient)
-    setModalIntent(intent)
-    setShowNewAppointment(true)
+    openNewAppointment({ patient, intent })
   }
 
   const isOrgAdmin = currentOrg ? memberships[currentOrg.id] === 'admin' : false
@@ -645,7 +669,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                     </div>
                     <Btn
                       variant="primary"
-                      onClick={() => { setModalIntent('new'); setShowNewAppointment(true) }}
+                      onClick={() => openNewAppointment()}
                       style={{ height: 34 }}
                     >
                       <Icon name="plus" size={13} /> Nuevo turno
@@ -761,7 +785,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               MobileNav tab bar (which has bottom-0 z-50). */}
           <button
             type="button"
-            onClick={() => { setModalIntent('new'); setShowNewAppointment(true) }}
+            onClick={() => openNewAppointment()}
             aria-label="Nuevo turno"
             className="lg:hidden fixed bottom-[78px] right-5 w-14 h-14 rounded-full bg-primary text-surface grid place-items-center cursor-pointer shadow-[0_8px_24px_rgba(59,74,56,0.32)] z-40 active:scale-95 transition-transform"
           >
@@ -838,11 +862,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           />
           <PatientDetailPanel
             patient={selectedPatient}
-            onScheduleAppointment={(p) => {
-              setReasignarFor(p)
-              setModalIntent('schedule-for-patient')
-              setShowNewAppointment(true)
-            }}
+            onScheduleAppointment={(p) => openNewAppointment({ patient: p, intent: 'schedule-for-patient' })}
           />
         </>
       )}
@@ -865,6 +885,15 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
       {activeView === 'organizacion' && currentOrg && userId && (
         <OrgAdminView org={currentOrg} userId={userId} onOrgUpdated={(updated) => setCurrentOrg(updated)} />
+      )}
+
+      {/* Mobile-only "Mi link" view. Desktop reaches the same content
+          via the MyLinkModal triggered from the sidebar. */}
+      {activeView === 'mi-link' && profile?.booking_code && (
+        <MyLinkSection
+          bookingCode={profile.booking_code}
+          doctorFirstName={profile?.first_name ?? undefined}
+        />
       )}
 
       {showCreateOrg && (
@@ -910,75 +939,107 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         />
       )}
 
-      <NewAppointmentModal
-        open={showNewAppointment}
-        onClose={() => {
-          setShowNewAppointment(false)
-          setReasignarFor(null)
-          setModalIntent('new')
-        }}
-        patients={supaPatients}
-        patientRows={supaPatientRows}
-        appointments={appointments}
-        locations={locations}
-        defaultDate={selectedDate}
-        defaultDuration={profile?.session_duration ?? 50}
-        prefilledPatient={reasignarFor}
-        title={
-          modalIntent === 'reasignar'
-            ? 'Reasignar turno'
-            : modalIntent === 'schedule-for-patient'
-              ? 'Agendar turno'
-              : 'Nuevo turno'
-        }
-        onCreateAppointment={async (input) =>
-          addAppointment({
-            patient_id: input.patient_id,
-            patient_name: input.patient_name,
-            location_id: input.location_id,
-            date: input.date,
-            time: input.time,
-            duration: input.duration,
-            detail: input.detail,
-            status: input.status,
-          })
-        }
-        onCreatePatient={async (name, insurance) => {
-          // Paywall: free plan limited to 10 patients
-          if (!canAddPatient(currentPlan, supaPatients.length)) {
-            setShowNewAppointment(false)
-            setPaywall({
-              title: 'Llegaste al límite de tu plan',
-              description: `El plan Free permite hasta ${PLANS.free.limits.patients} pacientes. Para registrar más, pasate a Pro.`,
-              requiredPlan: 'pro',
+      {/* Shared props for the new-turno flow. We render the same
+          component twice — once as a desktop modal (overlay) and once
+          as a mobile section (full-screen, routed via activeView). The
+          mobile section participates in the back-button history, which
+          is the whole point: tapping back leaves the form like any
+          other view, instead of dismissing a popup. */}
+      {(() => {
+        const newApptProps = {
+          patients: supaPatients,
+          patientRows: supaPatientRows,
+          appointments,
+          locations,
+          defaultDate: selectedDate,
+          defaultDuration: profile?.session_duration ?? 50,
+          prefilledPatient: reasignarFor,
+          title:
+            modalIntent === 'reasignar'
+              ? 'Reasignar turno'
+              : modalIntent === 'schedule-for-patient'
+                ? 'Agendar turno'
+                : 'Nuevo turno',
+          onCreateAppointment: async (input: {
+            patient_id: string | null
+            patient_name: string
+            location_id: string | null
+            date: string
+            time: string
+            duration: string
+            detail: string
+            status: 'confirmado' | 'pendiente'
+          }) =>
+            addAppointment({
+              patient_id: input.patient_id,
+              patient_name: input.patient_name,
+              location_id: input.location_id,
+              date: input.date,
+              time: input.time,
+              duration: input.duration,
+              detail: input.detail,
+              status: input.status,
+            }),
+          onCreatePatient: async (name: string, insurance: string) => {
+            if (!canAddPatient(currentPlan, supaPatients.length)) {
+              closeNewAppointment()
+              setPaywall({
+                title: 'Llegaste al límite de tu plan',
+                description: `El plan Free permite hasta ${PLANS.free.limits.patients} pacientes. Para registrar más, pasate a Pro.`,
+                requiredPlan: 'pro',
+              })
+              return null
+            }
+            const err = await addPatient({
+              name,
+              insurance,
+              phone: '',
+              email: '',
+              age: '',
+              since: new Date().toLocaleDateString('es-AR', { month: 'short', year: 'numeric' }),
+              last_visit: '',
+              total_sessions: 0,
+              tags: [],
             })
-            return null
-          }
-          const err = await addPatient({
-            name,
-            insurance,
-            phone: '',
-            email: '',
-            age: '',
-            since: new Date().toLocaleDateString('es-AR', { month: 'short', year: 'numeric' }),
-            last_visit: '',
-            total_sessions: 0,
-            tags: [],
-          })
-          if (err) return null
-          // After add, the list refetches. We need to find the created patient row:
-          // do a lightweight direct query.
-          const { data } = await supabase
-            .from('patients')
-            .select('id')
-            .eq('doctor_id', userId ?? '')
-            .eq('name', name)
-            .order('id', { ascending: false })
-            .limit(1)
-            .single()
-          return data ? { id: data.id } : null
-        }}
-      />
+            if (err) return null
+            const { data } = await supabase
+              .from('patients')
+              .select('id')
+              .eq('doctor_id', userId ?? '')
+              .eq('name', name)
+              .order('id', { ascending: false })
+              .limit(1)
+              .single()
+            return data ? { id: data.id } : null
+          },
+        }
+
+        return (
+          <>
+            {/* Desktop: overlay modal. Mobile users never see this
+                because the openNewAppointment helper routes them to
+                the section view instead. */}
+            <NewAppointmentModal
+              {...newApptProps}
+              mode="modal"
+              open={showNewAppointment}
+              onClose={closeNewAppointment}
+            />
+
+            {/* Mobile: full-screen section. Only mounts when activeView
+                is 'nuevo-turno' so the form state resets between
+                openings (same as a real route). */}
+            {activeView === 'nuevo-turno' && (
+              <NewAppointmentModal
+                {...newApptProps}
+                mode="section"
+                open
+                onClose={closeNewAppointment}
+              />
+            )}
+          </>
+        )
+      })()}
 
       <RemindersModal
         open={remindersMode !== null}
@@ -993,7 +1054,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       <MobileNav
         activeView={activeView}
         onNavigate={handleNavigate}
-        onOpenMyLink={profile?.booking_code ? () => setShowMyLink(true) : undefined}
+        showMyLink={!!profile?.booking_code}
       />
     </div>
   )

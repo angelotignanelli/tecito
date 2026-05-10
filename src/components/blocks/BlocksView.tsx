@@ -42,39 +42,45 @@ export default function BlocksView({ blocks, onAdd, onRemove }: Props) {
           subtitle="Fechas y horarios no disponibles para nuevos turnos."
         />
         {/* New block form */}
-        <form onSubmit={handleSubmit} className="bg-surface border border-gray-border rounded-[14px] p-5 mb-6">
+        <form onSubmit={handleSubmit} className="bg-surface border border-gray-border rounded-[14px] p-4 sm:p-5 mb-6">
           <div className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-4" style={{ fontFamily: 'var(--font-mono)' }}>
             Nuevo bloqueo
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-            <div>
-              <label className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-1 block" style={{ fontFamily: 'var(--font-mono)' }}>Desde</label>
+            <div className="min-w-0">
+              <label className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-1.5 block" style={{ fontFamily: 'var(--font-mono)' }}>Desde</label>
               <input
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="w-full px-3 py-[9px] rounded-[8px] border border-gray-border bg-surface-2 text-[13px] text-text focus:border-primary-mid"
+                // iOS Safari's native `type=date` control has an intrinsic
+                // width and ignores `width:100%` when the grid track lacks
+                // `min-w-0`, so the box bleeds past its parent. Forcing
+                // box-sizing + min-w-0 + appearance-none keeps it contained,
+                // and the `[&:invalid]:text-text-hint` rule keeps the
+                // dd/mm/aaaa placeholder visible while the field is empty.
+                className="block w-full max-w-full min-w-0 box-border appearance-none px-3 h-[42px] rounded-[10px] border border-gray-border bg-bg text-[14px] text-text focus:border-primary-mid focus:outline-none [&:invalid]:text-text-hint"
                 required
               />
             </div>
-            <div>
-              <label className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-1 block" style={{ fontFamily: 'var(--font-mono)' }}>Hasta</label>
+            <div className="min-w-0">
+              <label className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-1.5 block" style={{ fontFamily: 'var(--font-mono)' }}>Hasta</label>
               <input
                 type="date"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
                 min={from}
-                className="w-full px-3 py-[9px] rounded-[8px] border border-gray-border bg-surface-2 text-[13px] text-text focus:border-primary-mid"
+                className="block w-full max-w-full min-w-0 box-border appearance-none px-3 h-[42px] rounded-[10px] border border-gray-border bg-bg text-[14px] text-text focus:border-primary-mid focus:outline-none [&:invalid]:text-text-hint"
                 required
               />
             </div>
-            <div>
-              <label className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-1 block" style={{ fontFamily: 'var(--font-mono)' }}>Motivo</label>
+            <div className="min-w-0">
+              <label className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-1.5 block" style={{ fontFamily: 'var(--font-mono)' }}>Motivo</label>
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full px-3 py-[9px] rounded-[8px] border border-gray-border bg-surface-2 text-[13px] text-text focus:border-primary-mid"
+                className="block w-full max-w-full min-w-0 box-border px-3 h-[42px] rounded-[10px] border border-gray-border bg-bg text-[14px] text-text focus:border-primary-mid focus:outline-none"
               >
                 <option>Vacaciones</option>
                 <option>Congreso / Capacitación</option>
@@ -146,34 +152,23 @@ export default function BlocksView({ blocks, onAdd, onRemove }: Props) {
 function BlockCard({ block, onRemove, isPast }: { block: DateBlock; onRemove: (id: string) => void; isPast?: boolean }) {
   const days = getDatesBetween(block.from, block.to).length
 
-  const reasonStyle: Record<string, { bg: string; fg: string }> = {
-    'Vacaciones': { bg: 'bg-teal-light', fg: 'text-teal' },
-    'Congreso / Capacitación': { bg: 'bg-primary-light', fg: 'text-primary' },
-    'Licencia médica': { bg: 'bg-coral-light', fg: 'text-coral' },
-    'Feriado': { bg: 'bg-amber-light', fg: 'text-amber' },
-    'Otro': { bg: 'bg-surface-2', fg: 'text-text-muted' },
-  }
-  const s = reasonStyle[block.reason] ?? reasonStyle['Otro']
+  const range = block.from === block.to
+    ? formatDateShort(block.from)
+    : `${formatDateShort(block.from)} → ${formatDateShort(block.to)}`
 
   return (
-    <div className="bg-surface border border-gray-border rounded-[14px] px-5 py-4 flex items-center gap-4">
-      <div className="min-w-[92px]">
-        <div className="text-[18px] tracking-[-0.015em] leading-none text-text" style={{ fontFamily: 'var(--font-serif)' }}>
-          {formatDateShort(block.from)}
-        </div>
-        {block.from !== block.to && (
-          <div className="text-[11px] text-text-hint mt-[3px]" style={{ fontFamily: 'var(--font-mono)' }}>
-            → {formatDateShort(block.to)}
-          </div>
-        )}
-      </div>
+    // One-line card: reason leads, range + days sit below in mono. We
+    // dropped the colored chip and the giant serif date column — they
+    // were causing the duplicate "Otro / Otro" and an oversized left
+    // gutter that broke the mobile rhythm.
+    <div className="bg-surface border border-gray-border rounded-[14px] px-4 sm:px-5 py-3.5 sm:py-4 flex items-center gap-3">
       <div className="flex-1 min-w-0">
-        <div className="text-[14px] font-medium text-text">{block.reason}</div>
-        <div className="text-[12px] text-text-muted mt-[3px] flex items-center gap-2">
-          <span className={`inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full ${s.bg} ${s.fg}`}>
-            {block.reason}
-          </span>
-          <span>{days} día{days !== 1 ? 's' : ''}</span>
+        <div className="text-[14px] font-medium text-text truncate">{block.reason}</div>
+        <div
+          className="text-[11px] text-text-hint mt-1 truncate"
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
+          {range} · {days} día{days !== 1 ? 's' : ''}
         </div>
       </div>
       {!isPast && (

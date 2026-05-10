@@ -68,15 +68,35 @@ body {
 }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* Utility: hide scrollbar but keep scroll */
+/* Utility: hide scrollbar but keep scroll.
+ *
+ * Beyond hiding the bar, this class is now responsible for making nested
+ * scroll containers feel right on iOS Safari. Our app shell uses
+ * `h-screen overflow-hidden` on the outer column and `overflow-y-auto`
+ * on the content panel — without `overscroll-behavior: contain`, when
+ * the inner panel hits its top/bottom edge iOS tries to bubble the
+ * gesture up to the dead `overflow-hidden` parent, the bubble gets
+ * absorbed, and the user has to lift their finger and start a fresh
+ * swipe. That's the "se traba" symptom. Containing the gesture stops
+ * the propagation and momentum stays inside the scroller. The
+ * webkit-overflow-scrolling line keeps momentum on older WebKit. */
 .scrollbar-hide {
   scrollbar-width: none;          /* Firefox */
   -ms-overflow-style: none;       /* IE/Edge legacy */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;                  /* Chrome/Safari */
   width: 0;
   height: 0;
+}
+
+/* Disable the browser's pull-to-refresh / bounce-up on the document
+ * itself — the app is a single-page shell, so the system gesture only
+ * confuses users (they think they "lost" their scroll). */
+html, body {
+  overscroll-behavior-y: none;
 }
 
 input:focus, textarea:focus, select:focus {

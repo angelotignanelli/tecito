@@ -61,7 +61,10 @@ function humanizeWait(mins: number): string {
  * - Time-of-day greeting + day eyebrow
  * - Big "Próximo turno" card (next non-cancelled appointment whose
  *   start is still ahead) with one-tap "Avisar por WhatsApp"
- * - 4-tile stats strip (Total / Confirmados / Pendientes / Cancelados)
+ *
+ * The day-by-day breakdown (total / confirmados / pendientes / cancel.)
+ * lives on desktop's right rail; on mobile the hero already names the
+ * one turno that matters next, so the strip felt like noise.
  *
  * Hidden on lg+ via the `lg:hidden` wrapper at the call site.
  */
@@ -72,11 +75,6 @@ export default function MobileAgendaHero({
   onRecordar,
   onSelect,
 }: Props) {
-  const total = appointments.length
-  const confirmados = appointments.filter((a) => a.status === 'confirmado').length
-  const pendientes = appointments.filter((a) => a.status === 'pendiente').length
-  const cancelados = appointments.filter((a) => a.status === 'cancelado').length
-
   // The "next" turno: first non-cancelled with start time in the future.
   // Only meaningful if the selected day is today — otherwise just pick
   // the earliest non-cancelled turno of the day.
@@ -212,39 +210,6 @@ export default function MobileAgendaHero({
         </div>
       )}
 
-      {/* Stats strip — 4 tiles */}
-      {total > 0 && (
-        <div className="grid grid-cols-4 gap-1.5 mb-4">
-          {[
-            { label: 'Total', value: total, dot: 'var(--color-text-hint)' },
-            { label: 'Confirm.', value: confirmados, dot: 'var(--color-teal)' },
-            { label: 'Pendientes', value: pendientes, dot: 'var(--color-amber)' },
-            { label: 'Cancel.', value: cancelados, dot: 'var(--color-coral)' },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="bg-surface border border-gray-border rounded-[12px] py-2.5 px-2 text-center"
-            >
-              <div
-                className="text-[20px] leading-none tracking-[-0.02em] text-text"
-                style={{ fontFamily: 'var(--font-serif)' }}
-              >
-                {s.value}
-              </div>
-              <div
-                className="text-[9px] text-text-hint mt-1.5 uppercase tracking-[0.1em] flex items-center justify-center gap-1"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                <span
-                  className="inline-block w-1 h-1 rounded-full"
-                  style={{ background: s.dot }}
-                />
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

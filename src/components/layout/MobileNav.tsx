@@ -17,7 +17,10 @@ const items: NavItem[] = [
 interface Props {
   activeView: View
   onNavigate: (view: View) => void
-  onOpenMyLink?: () => void
+  /** Whether to surface the "Mi link" tab. On mobile, "Mi link" is a
+   * full-screen section (not a modal), so tapping the tab navigates
+   * to the dedicated `mi-link` view rather than opening an overlay. */
+  showMyLink?: boolean
 }
 
 /**
@@ -27,7 +30,7 @@ interface Props {
  * for the active tab, and a safe-area pad at the bottom so iOS home
  * indicator doesn't overlap the labels.
  */
-export default function MobileNav({ activeView, onNavigate, onOpenMyLink }: Props) {
+export default function MobileNav({ activeView, onNavigate, showMyLink }: Props) {
   return (
     <div
       className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-gray-border"
@@ -60,14 +63,22 @@ export default function MobileNav({ activeView, onNavigate, onOpenMyLink }: Prop
             </button>
           )
         })}
-        {onOpenMyLink && (
+        {showMyLink && (
           <button
             type="button"
-            onClick={onOpenMyLink}
-            className="flex flex-col items-center gap-0.5 px-3 py-1 cursor-pointer text-text-hint hover:text-text transition-colors"
+            onClick={() => onNavigate('mi-link')}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 cursor-pointer transition-colors ${
+              activeView === 'mi-link' ? 'text-primary' : 'text-text-hint hover:text-text'
+            }`}
           >
-            <Icon name="link" size={22} stroke={1.6} />
-            <div className="text-[10px] mt-0.5 font-medium">Mi link</div>
+            <Icon name="link" size={22} stroke={activeView === 'mi-link' ? 2 : 1.6} />
+            <div
+              className={`text-[10px] mt-0.5 ${
+                activeView === 'mi-link' ? 'font-semibold' : 'font-medium'
+              }`}
+            >
+              Mi link
+            </div>
           </button>
         )}
       </div>

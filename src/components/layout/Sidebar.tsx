@@ -4,7 +4,7 @@ import { PLANS, type PlanId } from '../../lib/plans'
 import Icon from '../Icon'
 import Logo from '../Logo'
 
-export type View = 'agenda' | 'pacientes' | 'bloqueos' | 'estadisticas' | 'config' | 'perfil' | 'organizacion'
+export type View = 'agenda' | 'pacientes' | 'bloqueos' | 'estadisticas' | 'config' | 'perfil' | 'organizacion' | 'mi-link' | 'nuevo-turno'
 
 const navItems: { icon: string; label: string; view: View }[] = [
   { icon: 'calendar', label: 'Agenda', view: 'agenda' },
