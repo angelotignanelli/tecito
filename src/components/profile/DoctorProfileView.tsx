@@ -131,7 +131,7 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg">
-      <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
+      <div className="px-4 sm:px-10 pt-6 sm:pt-8 overflow-y-auto flex-1 pb-28 lg:pb-10 scrollbar-hide">
         <PageHeader
           title="Mi perfil."
           subtitle="Datos profesionales y configuración de consultorio."

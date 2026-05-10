@@ -604,7 +604,13 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const canceladosCount = filteredAppointments.filter((a) => a.status === 'cancelado').length
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    /* h-dvh (dynamic viewport height) instead of h-screen so the shell
+       tracks the *visible* viewport on mobile browsers. With h-screen
+       (100vh) iOS Safari / Android Chrome compute the largest possible
+       viewport (URL bar collapsed), pushing our sections' fixed footers
+       below the visible area and clipping the bottom of long lists
+       behind the MobileNav. */
+    <div className="flex h-dvh overflow-hidden">
       <Sidebar
         activeView={activeView}
         onNavigate={handleNavigate}
@@ -627,7 +633,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       {activeView === 'agenda' && (
         <>
           <div className="flex-1 flex flex-col h-screen overflow-hidden bg-bg">
-            <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-10 overflow-y-auto flex-1 pb-20 lg:pb-10 scrollbar-hide">
+            <div className="px-4 sm:px-10 pt-6 sm:pt-8 overflow-y-auto flex-1 pb-28 lg:pb-10 scrollbar-hide">
               {/* Mobile-only hero (greeting + próximo turno + stats).
                   Replaces the desktop PageHeader on small screens. */}
               <MobileAgendaHero
