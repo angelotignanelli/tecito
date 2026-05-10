@@ -79,8 +79,16 @@ export default function AuthShell({ children }: { children: ReactNode }) {
           md+: classic centered card, no footer (the sage column on the
           left already carries the brand). */}
       <div className="flex-1 flex flex-col md:flex-row md:items-center justify-center md:p-10 overflow-y-auto">
-        <div className="flex-1 md:flex-none flex items-center justify-center w-full px-6 py-10 md:p-0">
-          <div className="w-full max-w-[400px]">{children}</div>
+        {/* On mobile we let the form area be a vertical flex column
+            (the child view stretches to fill height), so callers like
+            LoginView can pin their heading to the top while their body
+            section uses `flex-1 justify-center` to sit in the optical
+            middle of the remaining track. On desktop it's the classic
+            centered card. */}
+        <div className="flex-1 md:flex-none flex md:items-center justify-center w-full px-6 pt-10 md:p-0">
+          <div className="w-full max-w-[400px] flex-1 md:flex-none flex flex-col">
+            {children}
+          </div>
         </div>
 
         {/* Mobile-only footer — small editorial touch + tech credibility

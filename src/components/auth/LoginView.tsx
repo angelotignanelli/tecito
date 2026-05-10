@@ -88,6 +88,9 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
 
   return (
     <AuthShell>
+      {/* Heading anchored to the top on mobile (AuthShell's mobile
+          form area is flex-col), block-level on desktop where the
+          whole card is centered as a unit. */}
       <div className="mb-7">
         <h1
           className="text-[36px] font-normal tracking-[-0.028em] text-text m-0 leading-[1.1]"
@@ -98,6 +101,11 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
         <p className="text-[13px] text-text-muted mt-2">Bienvenida de nuevo.</p>
       </div>
 
+      {/* Body — flex-1 + justify-center on mobile so the inputs sit at
+          the optical center between the heading and the brand footer.
+          On md+ we collapse those modifiers so the layout is identical
+          to before. */}
+      <div className="flex-1 md:flex-none flex flex-col justify-center md:block">
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="text-[12px] text-text-muted font-medium mb-1.5 block">Email</label>
@@ -170,6 +178,7 @@ export default function LoginView({ onLoginSuccess, onGoToRegister }: Props) {
         >
           Creá tu cuenta
         </button>
+      </div>
       </div>
     </AuthShell>
   )
