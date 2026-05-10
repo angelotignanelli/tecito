@@ -75,6 +75,12 @@ export default function MobileAgendaHero({
   onRecordar,
   onSelect,
 }: Props) {
+  // Counters used by the greeting + the "X / Y" position pill on the
+  // próximo-turno card. We dropped the 4-tile stats strip on mobile but
+  // these two stay because they live inside the hero's narrative.
+  const total = appointments.length
+  const pendientes = appointments.filter((a) => a.status === 'pendiente').length
+
   // The "next" turno: first non-cancelled with start time in the future.
   // Only meaningful if the selected day is today — otherwise just pick
   // the earliest non-cancelled turno of the day.
