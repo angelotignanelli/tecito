@@ -212,7 +212,7 @@ export default function BookingModal({ doctor, slot, location, onClose, onSucces
 
           <Field label="DNI" value={dni} onChange={setDni} placeholder="32.481.204" inputMode="numeric" />
           <Field label="WhatsApp" value={phone} onChange={setPhone} placeholder="+54 9 11 5555-0001" type="tel" helper="Te enviamos la confirmación por acá." />
-          <Field label="Email" value={email} onChange={setEmail} placeholder="tu@email.com (opcional)" type="email" />
+          <Field label="Email" value={email} onChange={setEmail} placeholder="tu@email.com" type="email" />
 
           {/* Insurance chips */}
           <div className="mt-4">

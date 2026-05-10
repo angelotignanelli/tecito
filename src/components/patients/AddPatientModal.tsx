@@ -116,7 +116,7 @@ export default function AddPatientModal({ onClose, onAdd }: Props) {
             label="Email"
             value={email}
             onChange={setEmail}
-            placeholder="paciente@email.com (opcional)"
+            placeholder="paciente@email.com"
             type="email"
           />
 
