@@ -79,7 +79,7 @@ export default function AuthShell({ children }: { children: ReactNode }) {
           md+: classic centered card, no footer (the sage column on the
           left already carries the brand). */}
       <div className="flex-1 flex flex-col md:flex-row md:items-center justify-center md:p-10 overflow-y-auto">
-        <div className="flex-1 md:flex-none flex items-start md:items-center justify-center w-full px-6 pt-14 md:p-0">
+        <div className="flex-1 md:flex-none flex items-center justify-center w-full px-6 py-10 md:p-0">
           <div className="w-full max-w-[400px]">{children}</div>
         </div>
 
