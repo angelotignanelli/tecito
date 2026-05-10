@@ -53,6 +53,12 @@ export default function PublicBookingPage({ bookingCode }: Props) {
   // Selection state
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [pickedTime, setPickedTime] = useState<string | null>(null)
+  // First day of the calendar month currently being viewed. Defaults to
+  // the current month and the patient pages forward/back from there.
+  const [monthAnchor, setMonthAnchor] = useState<Date>(() => {
+    const d = new Date()
+    return new Date(d.getFullYear(), d.getMonth(), 1)
+  })
   const [manualLocationId, setManualLocationId] = useState<string | null>(null)
 
   const [selectedSlot, setSelectedSlot] = useState<
@@ -87,6 +93,9 @@ export default function PublicBookingPage({ bookingCode }: Props) {
   // Consultorio B: Lun a Vie) would see B's Wed/Fri vanish entirely.
   // No-filter view (manualLocationId=null) keeps the merged behavior:
   // each day still has one representative location to display.
+  //
+  // 90-day window: lets the patient page up to 3 months ahead in the
+  // calendar without us having to refetch on every month nav.
   useEffect(() => {
     if (!doctor) return
     let cancelled = false
@@ -99,10 +108,9 @@ export default function PublicBookingPage({ bookingCode }: Props) {
     }
 
     if (!manualLocationId) {
-      // Refresh the merged view (in case data changed while a filter was active).
-      getGroupedAvailableSlots(doctor.id, locations, 45).then(finish)
+      getGroupedAvailableSlots(doctor.id, locations, 90).then(finish)
     } else {
-      getAvailableSlotsRange(doctor.id, 45, manualLocationId).then((slots) => {
+      getAvailableSlotsRange(doctor.id, 90, manualLocationId).then((slots) => {
         finish(slots.map((s) => ({ ...s, locationId: manualLocationId })))
       })
     }
@@ -331,6 +339,8 @@ export default function PublicBookingPage({ bookingCode }: Props) {
               locationsById={locationsById}
               stepIndex={pickedTime ? 1 : 0}
               loading={slotsLoading}
+              monthAnchor={monthAnchor}
+              onChangeMonth={setMonthAnchor}
             />
             <RightRail
               locations={locations}
@@ -609,6 +619,8 @@ function CalendarGrid({
   locationsById,
   stepIndex,
   loading,
+  monthAnchor,
+  onChangeMonth,
 }: {
   allSlots: DaySlotsGrouped[]
   selectedDay: string | null
@@ -617,6 +629,8 @@ function CalendarGrid({
   locationsById: Map<string, { loc: PublicLocation; color: string; index: number }>
   stepIndex: number
   loading?: boolean
+  monthAnchor: Date
+  onChangeMonth: (next: Date) => void
 }) {
   const slotMap = new Map<string, DaySlotsGrouped>()
   for (const d of allSlots) slotMap.set(d.date, d)
@@ -624,11 +638,24 @@ function CalendarGrid({
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const todayISO = toISO(today)
-  const weeks = 4
-  const dow = today.getDay()
-  const offsetToMonday = (dow + 6) % 7
-  const start = new Date(today)
-  start.setDate(today.getDate() - offsetToMonday)
+
+  // Build a month-aligned grid: start at the Monday of the week
+  // containing the 1st of the anchor month, end at the Sunday of the
+  // week containing the last day of the month. That gives 5 or 6 rows
+  // depending on the month. Cells from neighboring months render
+  // dimmed so the patient still sees the full grid shape.
+  const firstOfMonth = new Date(monthAnchor.getFullYear(), monthAnchor.getMonth(), 1)
+  const lastOfMonth = new Date(monthAnchor.getFullYear(), monthAnchor.getMonth() + 1, 0)
+  const dowFirst = firstOfMonth.getDay()
+  const offsetToMonday = (dowFirst + 6) % 7
+  const start = new Date(firstOfMonth)
+  start.setDate(firstOfMonth.getDate() - offsetToMonday)
+  const dowLast = lastOfMonth.getDay()
+  const offsetFromSunday = (7 - dowLast) % 7
+  const end = new Date(lastOfMonth)
+  end.setDate(lastOfMonth.getDate() + offsetFromSunday)
+  const totalDays = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
+  const weeks = Math.ceil(totalDays / 7)
 
   const grid: Array<
     Array<{
@@ -636,6 +663,7 @@ function CalendarGrid({
       num: number
       inPast: boolean
       isToday: boolean
+      inOtherMonth: boolean
       day: DaySlotsGrouped | undefined
     }>
   > = []
@@ -650,13 +678,31 @@ function CalendarGrid({
         num: cell.getDate(),
         inPast: cell < today,
         isToday: iso === todayISO,
+        inOtherMonth: cell.getMonth() !== monthAnchor.getMonth(),
         day: slotMap.get(iso),
       })
     }
     grid.push(row)
   }
 
-  const monthName = new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+  const monthName = monthAnchor.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+
+  // Disable prev when we're already on the current month — never let
+  // the patient page back into the past. Disable next when we'd run
+  // off the end of our 90-day fetch window.
+  const currentMonthAnchor = new Date(today.getFullYear(), today.getMonth(), 1)
+  const maxAnchor = new Date(today.getFullYear(), today.getMonth() + 2, 1)
+  const canGoPrev = monthAnchor > currentMonthAnchor
+  const canGoNext = monthAnchor < maxAnchor
+  const goPrev = () => {
+    if (!canGoPrev) return
+    onChangeMonth(new Date(monthAnchor.getFullYear(), monthAnchor.getMonth() - 1, 1))
+  }
+  const goNext = () => {
+    if (!canGoNext) return
+    onChangeMonth(new Date(monthAnchor.getFullYear(), monthAnchor.getMonth() + 1, 1))
+  }
+
   const steps = ['Horario', 'Datos', 'Listo']
 
   return (
@@ -710,6 +756,36 @@ function CalendarGrid({
         </div>
       </div>
 
+      {/* Month nav: prev/next arrows + the month name. Disabled
+          buttons render with reduced opacity instead of being hidden,
+          so the layout doesn't shift between months. */}
+      <div className="flex items-center justify-between mb-3.5">
+        <button
+          type="button"
+          onClick={goPrev}
+          disabled={!canGoPrev}
+          aria-label="Mes anterior"
+          className="w-8 h-8 rounded-full border border-gray-border bg-surface grid place-items-center cursor-pointer text-text hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <Icon name="chevL" size={14} />
+        </button>
+        <div
+          className="text-[13px] font-medium text-text capitalize"
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
+          {monthName}
+        </div>
+        <button
+          type="button"
+          onClick={goNext}
+          disabled={!canGoNext}
+          aria-label="Mes siguiente"
+          className="w-8 h-8 rounded-full border border-gray-border bg-surface grid place-items-center cursor-pointer text-text hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <Icon name="chevR" size={14} />
+        </button>
+      </div>
+
       <div className="grid grid-cols-7 gap-[7px] mb-[9px]">
         {['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'].map((d) => (
           <div
@@ -746,7 +822,7 @@ function CalendarGrid({
               const selected = selectedDay === cell.iso
               const belongsToManual =
                 !manualLocationId || (day && day.locationId === manualLocationId)
-              const dimmed = available && !belongsToManual
+              const dimmed = (available && !belongsToManual) || cell.inOtherMonth
               const pinColor = day?.locationId ? locationsById.get(day.locationId)?.color : null
 
               return (
