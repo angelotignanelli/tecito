@@ -7,7 +7,7 @@ import Sidebar, { type View } from './components/layout/Sidebar'
 import MobileNav from './components/layout/MobileNav'
 import DayNav from './components/agenda/DayNav'
 import AppointmentList from './components/agenda/AppointmentList'
-import MobileAgendaHero from './components/agenda/MobileAgendaHero'
+import { MobileAgendaGreeting, MobileNextTurnoCard } from './components/agenda/MobileAgendaHero'
 import PatientPanel from './components/patient/PatientPanel'
 import PatientsView from './components/patients/PatientsView'
 import PatientDetailPanel from './components/patients/PatientDetailPanel'
@@ -636,9 +636,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         <>
           <div className="bg-bg lg:flex-1 lg:flex lg:flex-col lg:h-screen lg:overflow-hidden">
             <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-28 lg:pb-10 lg:overflow-y-auto lg:flex-1 lg:scrollbar-hide">
-              {/* Mobile-only hero (greeting + próximo turno + stats).
-                  Replaces the desktop PageHeader on small screens. */}
-              <MobileAgendaHero
+              {/* Mobile-only greeting — replaces the desktop PageHeader
+                  on small screens. The Próximo-turno card is rendered
+                  separately below the DayNav so the day selector stays
+                  visible above the fold. */}
+              <MobileAgendaGreeting
                 appointments={filteredAppointments}
                 selectedDate={selectedDate}
                 doctorFirstName={profile?.first_name ?? undefined}
@@ -704,6 +706,18 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                       }, {} as Record<string, number>)}
                     />
                   </div>
+
+                  {/* Próximo turno card — placed *after* the DayNav so
+                      the day selector lives above the fold on mobile.
+                      The card sits at the top of the day's content,
+                      right above the turno list. */}
+                  <MobileNextTurnoCard
+                    appointments={filteredAppointments}
+                    selectedDate={selectedDate}
+                    doctorFirstName={profile?.first_name ?? undefined}
+                    onRecordar={(a) => setRemindersMode(a)}
+                    onSelect={(a) => setSelectedId(a.id)}
+                  />
 
                   {/* Stat strip — 4 cols inside single card with dividers.
                       Hidden on mobile: the MobileAgendaHero already
