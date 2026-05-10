@@ -37,6 +37,12 @@ function isTodayISO(iso: string): boolean {
   return iso === today
 }
 
+/** True when the ISO date is strictly before today (in local time). */
+function isPastISO(iso: string): boolean {
+  const today = new Date().toISOString().split('T')[0]
+  return iso < today
+}
+
 function minutesUntil(timeHHMM: string, dateISO: string): number | null {
   const [h, m] = timeHHMM.split(':').map(Number)
   if (Number.isNaN(h) || Number.isNaN(m)) return null
@@ -82,18 +88,25 @@ export default function MobileAgendaHero({
   const pendientes = appointments.filter((a) => a.status === 'pendiente').length
 
   // The "next" turno: first non-cancelled with start time in the future.
-  // Only meaningful if the selected day is today — otherwise just pick
-  // the earliest non-cancelled turno of the day.
+  // For today → the next still-upcoming turno (including any that
+  // started within the last 10 min as "in progress").
+  // For a future day → the earliest of that day, as a preview.
+  // For a past day → nothing: there is no "next" turno on a day that
+  // already happened, and showing the card with the first turno of
+  // a past day misleads the doctor into thinking it's actionable.
   const today = isTodayISO(selectedDate)
+  const isPastDay = isPastISO(selectedDate)
   const candidates = appointments
     .filter((a) => a.status === 'confirmado' || a.status === 'pendiente')
     .sort((a, b) => a.time.localeCompare(b.time))
-  const next = today
-    ? candidates.find((a) => {
-        const m = minutesUntil(a.time, a.date)
-        return m === null || m >= -10 // include within last 10 min as "in progress"
-      })
-    : candidates[0]
+  const next = isPastDay
+    ? undefined
+    : today
+      ? candidates.find((a) => {
+          const m = minutesUntil(a.time, a.date)
+          return m === null || m >= -10 // include within last 10 min as "in progress"
+        })
+      : candidates[0]
 
   const indexOfNext = next
     ? appointments.findIndex((a) => a.id === next.id) + 1

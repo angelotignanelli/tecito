@@ -187,17 +187,22 @@ export default function AppointmentCard({
             {!isLibre && !isBloqueado && appointment.detail && !isPublicBooked && (
               <span className="truncate">{appointment.detail}</span>
             )}
-            {/* Public-booking turnos use a "Reservado online" pill in
-                place of the "Sin confirmar" amber badge — the patient
-                self-served and is already aware. */}
-            {isPublicBooked && appointment.status === 'pendiente' ? (
-              <span className="inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full bg-teal-light text-teal">
-                Reservado online
-              </span>
-            ) : (
-              <span className={`inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full ${badgeStyles[appointment.status]}`}>
-                {badgeLabel[appointment.status]}
-              </span>
+            {/* Status chip. Suppressed for past turnos: the "Turno
+                pasado" badge in the actions cluster already conveys
+                the state, and showing "Sin confirmar" / "Confirmado"
+                next to it is misleading — the doctor can't act on
+                either anymore. Public-booking turnos still use the
+                teal "Reservado online" pill when current. */}
+            {!showPastBadge && (
+              isPublicBooked && appointment.status === 'pendiente' ? (
+                <span className="inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full bg-teal-light text-teal">
+                  Reservado online
+                </span>
+              ) : (
+                <span className={`inline-block text-[11px] font-medium px-[9px] py-[2px] rounded-full ${badgeStyles[appointment.status]}`}>
+                  {badgeLabel[appointment.status]}
+                </span>
+              )
             )}
           </div>
         </div>
