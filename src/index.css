@@ -113,8 +113,14 @@ input:focus, textarea:focus, select:focus {
  * floor every interactive form control to 16px below the lg breakpoint
  * (where the soft keyboard actually shows up). */
 @media (max-width: 1023px) {
+  /* !important is intentional: Tailwind utility classes like
+   * `text-[13px]` are inline-applied via class and beat plain element
+   * selectors on specificity. Without !important, our visual tokens
+   * win and iOS / iOS-Chrome (WebKit) keeps zooming the viewport on
+   * focus. Visual difference between 13/14px and 16px is negligible —
+   * keyboard-induced zoom is the real ergonomic problem. */
   input, textarea, select {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 }
 

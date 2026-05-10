@@ -293,7 +293,7 @@ export default function NewAppointmentModal({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 scrollbar-hide">
           {step === 'patient' && (
             <>
               <label className="block text-[10px] text-text-hint uppercase tracking-[0.12em] mb-2" style={{ fontFamily: 'var(--font-mono)' }}>

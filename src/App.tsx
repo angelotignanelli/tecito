@@ -1055,11 +1055,16 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         locations={locations}
       />
 
-      <MobileNav
-        activeView={activeView}
-        onNavigate={handleNavigate}
-        showMyLink={!!profile?.booking_code}
-      />
+      {/* MobileNav is hidden while the user is inside the Nuevo turno
+          section — it's a focused flow with its own back arrow, and
+          the fixed bottom bar was covering the "Crear turno" CTA. */}
+      {activeView !== 'nuevo-turno' && (
+        <MobileNav
+          activeView={activeView}
+          onNavigate={handleNavigate}
+          showMyLink={!!profile?.booking_code}
+        />
+      )}
     </div>
   )
 }
