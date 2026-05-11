@@ -32,16 +32,11 @@ export default function LocationsManager({ userId }: Props) {
 
   return (
     <div className="bg-white border border-gray-border rounded-[14px] p-5 md:col-span-2">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <div className="text-[13px] font-semibold">Consultorios</div>
-          <div className="text-[11px] text-text-hint mt-0.5">
-            Los lugares donde atendés. Cada uno tiene sus propios días y horarios.
-          </div>
+      <div className="mb-4">
+        <div className="text-[13px] font-semibold">Consultorios</div>
+        <div className="text-[11px] text-text-hint mt-0.5">
+          Los lugares donde atendés. Cada uno tiene sus propios días y horarios.
         </div>
-        <Btn onClick={handleAdd} disabled={saving}>
-          <Icon name="plus" size={13} /> Agregar
-        </Btn>
       </div>
 
       {locations.length === 0 ? (
@@ -72,6 +67,18 @@ export default function LocationsManager({ userId }: Props) {
           ))}
         </div>
       )}
+
+      {/* Full-width "Agregar consultorio" CTA pinned to the bottom of
+          the card, sized to match the Cerrar sesión / Agregar a Google
+          Calendar buttons (py-3 / text-[14px] / rounded-[10px]). */}
+      <button
+        type="button"
+        onClick={handleAdd}
+        disabled={saving}
+        className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] text-[14px] font-medium border border-gray-border bg-surface text-text-muted hover:bg-surface-2 disabled:opacity-60 cursor-pointer transition-colors"
+      >
+        <Icon name="plus" size={14} /> Agregar consultorio
+      </button>
     </div>
   )
 }

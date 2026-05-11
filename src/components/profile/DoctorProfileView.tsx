@@ -471,23 +471,19 @@ function CalendarSync({ bookingCode }: { bookingCode: string | null }) {
         </button>
       </div>
 
-      {/* One-click add buttons */}
-      <div className="mt-3 flex flex-wrap gap-2">
-        <a
-          href={googleAddUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md cursor-pointer border border-gray-border bg-white text-text hover:bg-surface-2 transition-colors"
-        >
-          Agregar a Google Calendar
-        </a>
-        <a
-          href={webcalUrl}
-          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md cursor-pointer border border-gray-border bg-white text-text hover:bg-surface-2 transition-colors"
-        >
-          Agregar a Apple Calendar
-        </a>
-      </div>
+      {/* Single full-width "Agregar a Google Calendar" CTA, sized to
+          match the Cerrar sesión button (px-4 py-3 / text-[14px] /
+          rounded-[10px]). Apple Calendar removed: the same webcal://
+          URL works for Apple, so users on iOS / macOS just paste the
+          URL from the input above. */}
+      <a
+        href={googleAddUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] text-[14px] font-medium border border-gray-border bg-surface text-text-muted hover:bg-surface-2 cursor-pointer transition-colors"
+      >
+        Agregar a Google Calendar
+      </a>
 
       <div className="mt-4 text-[11px] text-text-hint leading-[1.5]">
         Es <strong>read-only</strong>: ves tus turnos en el calendario pero no podés editarlos desde ahí. Tecito es la fuente de verdad.
