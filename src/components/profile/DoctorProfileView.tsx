@@ -194,7 +194,11 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
             type="button"
             onClick={editing ? handleCancelEdit : () => setEditing(true)}
             aria-label={editing ? 'Cancelar edición' : 'Editar perfil'}
-            className="sm:hidden w-10 h-10 rounded-full grid place-items-center cursor-pointer bg-primary-light text-primary active:bg-primary-mid/30 transition-colors shrink-0"
+            // Secondary-button aesthetic in a circular shell: cream
+            // surface + thin border + muted text, hover lifts to
+            // surface-2. Matches the visual weight of <Btn variant="secondary">
+            // so it doesn't compete with the primary sage actions.
+            className="sm:hidden w-10 h-10 rounded-full grid place-items-center cursor-pointer bg-surface text-text-muted border border-gray-border-2 hover:bg-surface-2 active:bg-surface-2 transition-colors shrink-0"
           >
             <Icon name={editing ? 'x' : 'edit'} size={16} />
           </button>
