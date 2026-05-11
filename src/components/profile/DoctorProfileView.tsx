@@ -145,6 +145,28 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
 
   return (
     <div className="bg-bg lg:flex-1 lg:flex lg:flex-col lg:h-full lg:overflow-hidden">
+      {/* Mobile-only sticky banner while editing. Without it, the
+          state change can read as a no-op on phones because the
+          inputs appear below the fold and the only visible cue is a
+          tiny pencil→X swap at the top. The banner makes the mode
+          obvious and gives the user a one-tap path to save. */}
+      {editing && (
+        <div
+          className="sm:hidden sticky top-0 z-30 px-4 py-3 flex items-center gap-3 bg-primary text-surface shadow-[0_2px_8px_rgba(59,74,56,0.18)]"
+          style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}
+        >
+          <Icon name="edit" size={14} />
+          <span className="flex-1 text-[13px] font-medium">Editando perfil</span>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="px-3 py-1.5 rounded-[8px] text-[12px] font-semibold bg-surface text-primary disabled:opacity-60 cursor-pointer"
+          >
+            {saving ? 'Guardando…' : 'Guardar'}
+          </button>
+        </div>
+      )}
       <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-28 lg:pb-10 lg:overflow-y-auto lg:flex-1 lg:scrollbar-hide">
         <PageHeader
           title="Mi perfil."
