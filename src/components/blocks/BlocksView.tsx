@@ -106,18 +106,18 @@ export default function BlocksView({ blocks, onAdd, onRemove }: Props) {
             </div>
           )}
 
-          <Btn
+          {/* Hand-rolled instead of <Btn> because we want the same
+              tall pill height as the WhatsApp CTA in MyLinkSection
+              (px-4 py-3.5 + text-[14px] + rounded-[12px]). Btn's md
+              size tops out at py-[7px] which read as a secondary
+              action next to a card-sized form. */}
+          <button
             type="submit"
             disabled={!!overlappingBlock}
-            variant="primary"
-            // Full-width inside the form card on mobile so it reads as
-            // the primary commit action for the block above. Auto width
-            // on sm+ keeps the desktop layout compact. mt-3 lifts it
-            // off the validation messages / day-counter line above.
-            className="w-full sm:w-auto justify-center mt-3"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-[12px] text-[14px] font-medium bg-primary text-surface hover:bg-[#2F3C2D] disabled:opacity-60 cursor-pointer transition-colors mt-3"
           >
             <Icon name="plus" size={13} /> Crear bloqueo
-          </Btn>
+          </button>
         </form>
 
         {/* Active blocks */}
