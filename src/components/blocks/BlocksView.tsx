@@ -106,7 +106,16 @@ export default function BlocksView({ blocks, onAdd, onRemove }: Props) {
             </div>
           )}
 
-          <Btn type="submit" disabled={!!overlappingBlock} variant="primary">
+          <Btn
+            type="submit"
+            disabled={!!overlappingBlock}
+            variant="primary"
+            // Full-width inside the form card on mobile so it reads as
+            // the primary commit action for the block above. Auto width
+            // on sm+ keeps the desktop layout compact. mt-3 lifts it
+            // off the validation messages / day-counter line above.
+            className="w-full sm:w-auto justify-center mt-3"
+          >
             <Icon name="plus" size={13} /> Crear bloqueo
           </Btn>
         </form>
