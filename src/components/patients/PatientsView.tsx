@@ -103,7 +103,7 @@ export default function PatientsView({ patients, patientRows, onSelectPatient, s
             <button
               type="button"
               onClick={() => setShowImport(true)}
-              className="mt-2 w-full text-center text-[12px] text-text-muted underline-offset-2 hover:underline cursor-pointer bg-transparent"
+              className="mt-2 w-full text-center text-[12px] text-text-muted underline underline-offset-2 cursor-pointer bg-transparent"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               o importá pacientes desde un CSV
