@@ -397,7 +397,37 @@ export default function PublicBookingPage({ bookingCode }: Props) {
           </div>
         )}
 
-        {allSlots.length === 0 ? (
+        {slotsLoading ? (
+          /* Skeleton — matches the day-card layout so the list doesn't
+             jump when slots arrive. Pulsing rows make it obvious that
+             the calendar is reacting to the consultorio change. */
+          <div className="flex-1 px-4 py-5">
+            <div
+              className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-2"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              Elegí el día
+            </div>
+            <div className="flex flex-col gap-2">
+              {Array.from({ length: 5 }, (_, i) => (
+                <div
+                  key={i}
+                  className="bg-surface border border-gray-border rounded-[12px] px-4 py-3 flex items-center gap-3.5 animate-pulse"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
+                  <div className="min-w-[40px] flex flex-col items-center gap-1">
+                    <div className="h-2.5 w-7 rounded-full bg-surface-2" />
+                    <div className="h-5 w-6 rounded bg-surface-2" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="h-3 w-2/3 rounded bg-surface-2" />
+                    <div className="h-2.5 w-1/2 rounded bg-surface-2 mt-1.5" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : allSlots.length === 0 ? (
           <div className="text-center py-16 px-6 flex-1">
             <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-surface border border-gray-border grid place-items-center text-text-hint">
               <Icon name="calendar" size={20} />
