@@ -36,6 +36,7 @@ import NewAppointmentModal from './components/agenda/NewAppointmentModal'
 import RemindersModal from './components/agenda/RemindersModal'
 import MyLinkModal from './components/share/MyLinkModal'
 import MyLinkSection from './components/share/MyLinkSection'
+import ErrorBoundary from './components/ErrorBoundary'
 
 type AuthScreen = 'loading' | 'landing' | 'login' | 'register' | 'reset-password' | 'onboarding' | 'join-org' | 'app' | 'public-booking' | 'not-found'
 
@@ -298,7 +299,11 @@ export default function App() {
     )
   }
 
-  return <Dashboard onLogout={handleLogout} />
+  return (
+    <ErrorBoundary label="Dashboard">
+      <Dashboard onLogout={handleLogout} />
+    </ErrorBoundary>
+  )
 }
 
 function Dashboard({ onLogout }: { onLogout: () => void }) {
