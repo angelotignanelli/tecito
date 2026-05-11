@@ -5,6 +5,7 @@ import { getPlan, type PlanId } from '../../lib/plans'
 import { getPublicBaseUrl } from '../../lib/publicUrl'
 import PageHeader from '../PageHeader'
 import Btn from '../Btn'
+import Icon from '../Icon'
 import LocationsManager from './LocationsManager'
 
 interface DoctorData {
@@ -140,6 +141,9 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
               {saved && <span className="text-xs text-teal font-medium mr-1">Guardado</span>}
               {editing ? (
                 <>
+                  {/* Edit-flow actions are needed on every breakpoint —
+                      mobile users that hit the pencil get into editing
+                      mode and still need Cancel / Save reachable. */}
                   <Btn onClick={handleCancelEdit}>Cancelar</Btn>
                   <Btn variant="primary" onClick={handleSave} disabled={saving}>
                     {saving ? 'Guardando…' : 'Guardar cambios'}
@@ -147,8 +151,12 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
                 </>
               ) : (
                 <>
-                  {onLogout && <Btn onClick={onLogout}>Cerrar sesión</Btn>}
-                  <Btn variant="primary" onClick={() => setEditing(true)}>Editar perfil</Btn>
+                  {/* On mobile we hide these — Cerrar sesión moves to a
+                      full-width button at the bottom of the page, and
+                      Editar perfil becomes a pencil icon next to the
+                      name below. Both still render on sm+. */}
+                  {onLogout && <Btn onClick={onLogout} className="hidden sm:inline-flex">Cerrar sesión</Btn>}
+                  <Btn variant="primary" onClick={() => setEditing(true)} className="hidden sm:inline-flex">Editar perfil</Btn>
                 </>
               )}
             </>
@@ -162,10 +170,23 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
             userId={userId}
             onUploaded={(url) => updateProfile({ avatar_url: url } as any)}
           />
-          <div>
-            <div className="text-lg font-semibold">{data.firstName} {data.lastName}</div>
-            <div className="text-sm text-text-muted">{data.specialty}{data.license ? ` · Mat. ${data.license}` : ''}</div>
+          <div className="flex-1 min-w-0">
+            <div className="text-lg font-semibold truncate">{data.firstName} {data.lastName}</div>
+            <div className="text-sm text-text-muted truncate">{data.specialty}{data.license ? ` · Mat. ${data.license}` : ''}</div>
           </div>
+          {/* Mobile-only pencil — replaces the "Editar perfil" header
+              button on phones. We keep it on the avatar row so the
+              user can act on the identity they're looking at. */}
+          {!editing && (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              aria-label="Editar perfil"
+              className="sm:hidden w-10 h-10 rounded-full grid place-items-center cursor-pointer text-text-muted hover:text-text hover:bg-surface-2 transition-colors shrink-0"
+            >
+              <Icon name="edit" size={18} />
+            </button>
+          )}
         </div>
 
         {/* Plan section */}
@@ -217,6 +238,20 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
             <CalendarSync bookingCode={profile?.booking_code || null} />
           </div>
         </div>
+
+        {/* Mobile-only logout — full-width destructive-ish CTA at the
+            very bottom of the profile. Desktop has it in the header
+            cluster + the sidebar, so it doesn't need to live here on
+            sm+. */}
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="sm:hidden mt-8 w-full px-4 py-3 rounded-[10px] text-[14px] font-medium border border-gray-border bg-surface text-text-muted hover:bg-surface-2 cursor-pointer transition-colors"
+          >
+            Cerrar sesión
+          </button>
+        )}
       </div>
     </div>
   )
