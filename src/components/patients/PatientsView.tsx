@@ -63,19 +63,53 @@ export default function PatientsView({ patients, patientRows, onSelectPatient, s
           }
           right={
             <>
+              {/* Desktop-only header CTAs. On mobile they re-surface
+                  below as a full-width primary + a subtle "importar"
+                  text link, following the same pattern as Mi link /
+                  Bloqueos / PlanCard. */}
               {onImportPatients && (
-                <Btn onClick={() => setShowImport(true)}>
-                  <Icon name="doc" size={13} /> Importar
-                </Btn>
+                <span className="hidden sm:flex">
+                  <Btn onClick={() => setShowImport(true)}>
+                    <Icon name="doc" size={13} /> Importar
+                  </Btn>
+                </span>
               )}
               {onAddPatient && (
-                <Btn variant="primary" onClick={() => setShowAdd(true)}>
-                  <Icon name="plus" size={13} /> Nuevo paciente
-                </Btn>
+                <span className="hidden sm:flex">
+                  <Btn variant="primary" onClick={() => setShowAdd(true)}>
+                    <Icon name="plus" size={13} /> Nuevo paciente
+                  </Btn>
+                </span>
               )}
             </>
           }
         />
+
+        {/* Mobile-only primary action block. "Nuevo paciente" is the
+            frequent action so it gets the full-width sage CTA; "Importar"
+            is mostly an onboarding step, so it lives as a small text
+            link underneath where it's discoverable without dominating. */}
+        <div className="sm:hidden mb-4">
+          {onAddPatient && (
+            <button
+              type="button"
+              onClick={() => setShowAdd(true)}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-[12px] text-[14px] font-medium bg-primary text-surface hover:bg-[#2F3C2D] cursor-pointer transition-colors"
+            >
+              <Icon name="plus" size={14} /> Nuevo paciente
+            </button>
+          )}
+          {onImportPatients && (
+            <button
+              type="button"
+              onClick={() => setShowImport(true)}
+              className="mt-2 w-full text-center text-[12px] text-text-muted underline-offset-2 hover:underline cursor-pointer bg-transparent"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              o importá pacientes desde un CSV
+            </button>
+          )}
+        </div>
 
         {/* Search */}
         <div className="relative mb-4">
