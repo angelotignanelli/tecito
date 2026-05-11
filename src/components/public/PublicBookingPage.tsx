@@ -358,9 +358,7 @@ export default function PublicBookingPage({ bookingCode }: Props) {
               className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-2"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              Consultorio · <span className="normal-case tracking-normal italic text-text-hint" style={{ fontFamily: 'var(--font-sans)' }}>
-                {manualLocationId ? 'filtrando el calendario' : 'se elige con la fecha'}
-              </span>
+              Consultorio
             </div>
             <div className="flex flex-col gap-1.5">
               {locations.map((loc) => {
@@ -402,11 +400,21 @@ export default function PublicBookingPage({ bookingCode }: Props) {
              jump when slots arrive. Pulsing rows make it obvious that
              the calendar is reacting to the consultorio change. */
           <div className="flex-1 px-4 py-5">
-            <div
-              className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-2"
-              style={{ fontFamily: 'var(--font-mono)' }}
-            >
-              Elegí el día
+            <div className="flex items-center justify-between mb-2">
+              <div
+                className="text-[10px] text-text-hint uppercase tracking-[0.12em]"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                Elegí el día
+              </div>
+              {/* Mini spinner, color-matched to the eyebrow's text-text-hint.
+                  border-current → inherits the same hint color as the
+                  title; border-t-transparent + animate-spin creates the
+                  rotating arc. */}
+              <div
+                className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin text-text-hint"
+                aria-hidden="true"
+              />
             </div>
             <div className="flex flex-col gap-2">
               {Array.from({ length: 5 }, (_, i) => (
