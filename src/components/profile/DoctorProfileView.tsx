@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useProfile, type ProfileRow } from '../../lib/hooks'
 import { supabase } from '../../lib/supabase'
 import { getPlan, type PlanId } from '../../lib/plans'
@@ -68,6 +68,19 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
   const [editing, setEditing] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  // Ref to the first editable section. On mobile we scroll it into
+  // view when the user enters edit mode, otherwise the pencil button
+  // sits at the top of the page and the inputs that just appeared
+  // are well below the fold — the click feels like a no-op.
+  const editableSectionRef = useRef<HTMLDivElement | null>(null)
+  const enterEditMode = () => {
+    setEditing(true)
+    // Wait one frame for the Fields to re-render as inputs, then
+    // scroll. Smooth behavior so the transition reads as intentional.
+    requestAnimationFrame(() => {
+      editableSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
 
   // Sync profile data when loaded
   useEffect(() => {
@@ -166,7 +179,7 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
                     <span className="hidden sm:flex"><Btn onClick={onLogout}>Cerrar sesión</Btn></span>
                   )}
                   <span className="hidden sm:flex">
-                    <Btn variant="primary" onClick={() => setEditing(true)}>Editar perfil</Btn>
+                    <Btn variant="primary" onClick={enterEditMode}>Editar perfil</Btn>
                   </span>
                 </>
               )}
@@ -192,7 +205,7 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
               UI rather than an inline decoration of the name. */}
           <button
             type="button"
-            onClick={editing ? handleCancelEdit : () => setEditing(true)}
+            onClick={editing ? handleCancelEdit : enterEditMode}
             aria-label={editing ? 'Cancelar edición' : 'Editar perfil'}
             // Secondary-button aesthetic in a circular shell: cream
             // surface + thin border + muted text, hover lifts to
@@ -209,7 +222,7 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
           <PlanCard plan={(profile.plan || 'free') as PlanId} onOpenPlans={onOpenPlans} />
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div ref={editableSectionRef} className="grid grid-cols-1 lg:grid-cols-2 gap-4 scroll-mt-4">
           {/* Personal info */}
           <div className="bg-white border border-gray-border rounded-[10px] p-5">
             <div className="text-[13px] font-semibold mb-4">Datos personales</div>
