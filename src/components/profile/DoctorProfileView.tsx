@@ -144,17 +144,30 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
                   - Cancelar      → X icon in the same spot while editing
                   - Guardar       → full-width primary button at bottom
                   - Cerrar sesión → full-width secondary button at bottom */}
+              {/* Wrapping each <Btn> in a span gated by `hidden sm:flex`
+                  is intentional: the Btn component sets `inline-flex` in
+                  its base className, which beats a `hidden` utility added
+                  via the className prop (same specificity, Tailwind emits
+                  `inline-flex` after `hidden` in the generated CSS). The
+                  wrapper has no other Btn styling so this is purely a
+                  visibility gate. */}
               {editing ? (
                 <>
-                  <Btn onClick={handleCancelEdit} className="hidden sm:inline-flex">Cancelar</Btn>
-                  <Btn variant="primary" onClick={handleSave} disabled={saving} className="hidden sm:inline-flex">
-                    {saving ? 'Guardando…' : 'Guardar cambios'}
-                  </Btn>
+                  <span className="hidden sm:flex"><Btn onClick={handleCancelEdit}>Cancelar</Btn></span>
+                  <span className="hidden sm:flex">
+                    <Btn variant="primary" onClick={handleSave} disabled={saving}>
+                      {saving ? 'Guardando…' : 'Guardar cambios'}
+                    </Btn>
+                  </span>
                 </>
               ) : (
                 <>
-                  {onLogout && <Btn onClick={onLogout} className="hidden sm:inline-flex">Cerrar sesión</Btn>}
-                  <Btn variant="primary" onClick={() => setEditing(true)} className="hidden sm:inline-flex">Editar perfil</Btn>
+                  {onLogout && (
+                    <span className="hidden sm:flex"><Btn onClick={onLogout}>Cerrar sesión</Btn></span>
+                  )}
+                  <span className="hidden sm:flex">
+                    <Btn variant="primary" onClick={() => setEditing(true)}>Editar perfil</Btn>
+                  </span>
                 </>
               )}
             </>
