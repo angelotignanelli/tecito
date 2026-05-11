@@ -388,7 +388,11 @@ function PlanCard({ plan, onOpenPlans }: { plan: PlanId; onOpenPlans?: () => voi
         </div>
         <button
           onClick={onOpenPlans}
-          className="w-full sm:w-auto sm:shrink-0 px-4 py-2.5 sm:py-2 rounded-[10px] sm:rounded-[8px] text-[13px] sm:text-[12px] font-medium cursor-pointer transition-colors bg-primary text-surface hover:bg-[#2F3C2D] border border-primary"
+          // Mobile: matches the WhatsApp CTA height in MyLinkSection
+          // (py-3.5 / text-[14px] / rounded-[12px]). Desktop: tight
+          // pill so it sits to the right of the plan info without
+          // dominating the row.
+          className="w-full sm:w-auto sm:shrink-0 px-4 py-3.5 sm:py-2 rounded-[12px] sm:rounded-[8px] text-[14px] sm:text-[12px] font-medium cursor-pointer transition-colors bg-primary text-surface hover:bg-[#2F3C2D] border border-primary"
         >
           {isFree ? 'Mejorar plan' : 'Cambiar plan'}
         </button>
