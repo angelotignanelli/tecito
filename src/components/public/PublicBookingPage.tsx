@@ -137,12 +137,6 @@ export default function PublicBookingPage({ bookingCode }: Props) {
     ? (locationsById.get(effectiveLocationId)?.loc ?? null)
     : null
 
-  const fullAddress = effectiveLocation?.address
-    ? `${effectiveLocation.address}${effectiveLocation.city ? ', ' + effectiveLocation.city : ''}`
-    : doctor?.address
-      ? `${doctor.address}${doctor.city ? ', ' + doctor.city : ''}`
-      : ''
-
   const handleBookingSuccess = async () => {
     if (!doctor) return
     // 1) Refresh availability so the just-booked slot doesn't show as
@@ -215,9 +209,6 @@ export default function PublicBookingPage({ bookingCode }: Props) {
   }
 
   const initials = `${doctor.first_name[0]}${doctor.last_name[0]}`.toUpperCase()
-  const mapUrl = fullAddress
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
-    : null
 
   return (
     <div
@@ -233,7 +224,13 @@ export default function PublicBookingPage({ bookingCode }: Props) {
       <header className="bg-surface border-b border-gray-border shrink-0" role="banner">
         <div className="px-6 lg:px-10 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <a href="/" className="cursor-pointer" aria-label="Volver a Tecito">
+            {/* inline-flex on the <a> so it becomes a real flex item
+                inside the parent row; without it the anchor renders as
+                display:inline and the Logo span inside sits on the
+                baseline, which made the wordmark read as visually
+                higher than the mono "Conexión segura" text on the
+                right. */}
+            <a href="/" className="cursor-pointer inline-flex items-center leading-none" aria-label="Volver a Tecito">
               <Logo variant="full" size={22} />
             </a>
             <div
@@ -244,7 +241,7 @@ export default function PublicBookingPage({ bookingCode }: Props) {
             </div>
           </div>
           <div
-            className="text-[10px] text-text-hint uppercase tracking-[0.14em] flex items-center gap-1.5"
+            className="text-[10px] text-text-hint uppercase tracking-[0.14em] flex items-center gap-1.5 leading-none"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             <Icon name="check" size={10} /> Conexión segura
@@ -252,22 +249,28 @@ export default function PublicBookingPage({ bookingCode }: Props) {
         </div>
       </header>
 
-      {/* MOBILE — compact doctor header */}
+      {/* MOBILE — compact doctor header.
+          Avatar shrunk to 48px so it visually matches the height of
+          the specialty eyebrow + name stack next to it (the previous
+          60px overshot and made the row feel heavy). Address removed:
+          each consultorio below already lists its own address, so
+          surfacing one here was duplicate noise. items-center +
+          py-3.5 keeps the section tight. */}
       <section
-        className="lg:hidden bg-surface border-b border-gray-border px-6 py-5"
+        className="lg:hidden bg-surface border-b border-gray-border px-6 py-3.5"
         aria-label="Profesional"
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-center gap-3.5">
           <div
-            className="w-[60px] h-[60px] rounded-full bg-primary-light text-primary grid place-items-center text-[18px] shrink-0 overflow-hidden"
+            className="w-[48px] h-[48px] rounded-full bg-primary-light text-primary grid place-items-center text-[16px] shrink-0 overflow-hidden"
             style={{ fontFamily: 'var(--font-serif)' }}
           >
             {doctor.avatar_url ? (
               <img
                 src={doctor.avatar_url}
                 alt={`Foto de ${doctor.first_name} ${doctor.last_name}`}
-                width={60}
-                height={60}
+                width={48}
+                height={48}
                 loading="eager"
                 decoding="async"
                 className="w-full h-full object-cover"
@@ -279,36 +282,18 @@ export default function PublicBookingPage({ bookingCode }: Props) {
           <div className="flex-1 min-w-0">
             {doctor.specialty && (
               <div
-                className="text-[11px] text-text-hint uppercase tracking-[0.15em] mb-1"
+                className="text-[10px] text-text-hint uppercase tracking-[0.15em] mb-0.5"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 {doctor.specialty}
               </div>
             )}
             <div
-              className="text-[22px] font-normal text-text leading-[1.1] tracking-[-0.02em]"
+              className="text-[20px] font-normal text-text leading-[1.1] tracking-[-0.02em] truncate"
               style={{ fontFamily: 'var(--font-serif)' }}
             >
               {doctor.first_name} {doctor.last_name}
             </div>
-            {fullAddress && (
-              <div className="text-[12px] text-text-muted mt-2 leading-[1.5]">
-                {fullAddress}
-                {mapUrl && (
-                  <>
-                    {' · '}
-                    <a
-                      href={mapUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary font-medium hover:underline"
-                    >
-                      Cómo llegar
-                    </a>
-                  </>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </section>
