@@ -139,22 +139,20 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
           right={
             <>
               {saved && <span className="text-xs text-teal font-medium mr-1">Guardado</span>}
+              {/* All header actions are desktop-only. On mobile:
+                  - Editar perfil → pencil icon next to the name
+                  - Cancelar      → X icon in the same spot while editing
+                  - Guardar       → full-width primary button at bottom
+                  - Cerrar sesión → full-width secondary button at bottom */}
               {editing ? (
                 <>
-                  {/* Edit-flow actions are needed on every breakpoint —
-                      mobile users that hit the pencil get into editing
-                      mode and still need Cancel / Save reachable. */}
-                  <Btn onClick={handleCancelEdit}>Cancelar</Btn>
-                  <Btn variant="primary" onClick={handleSave} disabled={saving}>
+                  <Btn onClick={handleCancelEdit} className="hidden sm:inline-flex">Cancelar</Btn>
+                  <Btn variant="primary" onClick={handleSave} disabled={saving} className="hidden sm:inline-flex">
                     {saving ? 'Guardando…' : 'Guardar cambios'}
                   </Btn>
                 </>
               ) : (
                 <>
-                  {/* On mobile we hide these — Cerrar sesión moves to a
-                      full-width button at the bottom of the page, and
-                      Editar perfil becomes a pencil icon next to the
-                      name below. Both still render on sm+. */}
                   {onLogout && <Btn onClick={onLogout} className="hidden sm:inline-flex">Cerrar sesión</Btn>}
                   <Btn variant="primary" onClick={() => setEditing(true)} className="hidden sm:inline-flex">Editar perfil</Btn>
                 </>
@@ -174,19 +172,19 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
             <div className="text-lg font-semibold truncate">{data.firstName} {data.lastName}</div>
             <div className="text-sm text-text-muted truncate">{data.specialty}{data.license ? ` · Mat. ${data.license}` : ''}</div>
           </div>
-          {/* Mobile-only pencil — replaces the "Editar perfil" header
-              button on phones. We keep it on the avatar row so the
-              user can act on the identity they're looking at. */}
-          {!editing && (
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              aria-label="Editar perfil"
-              className="sm:hidden w-10 h-10 rounded-full grid place-items-center cursor-pointer text-text-muted hover:text-text hover:bg-surface-2 transition-colors shrink-0"
-            >
-              <Icon name="edit" size={18} />
-            </button>
-          )}
+          {/* Mobile-only edit / cancel toggle.
+              - Idle (✎ pencil)  → tap enters edit mode
+              - Editing (✕ close) → tap discards changes
+              Filled-circle treatment so the button reads as actionable
+              UI rather than an inline decoration of the name. */}
+          <button
+            type="button"
+            onClick={editing ? handleCancelEdit : () => setEditing(true)}
+            aria-label={editing ? 'Cancelar edición' : 'Editar perfil'}
+            className="sm:hidden w-10 h-10 rounded-full grid place-items-center cursor-pointer bg-primary-light text-primary active:bg-primary-mid/30 transition-colors shrink-0"
+          >
+            <Icon name={editing ? 'x' : 'edit'} size={16} />
+          </button>
         </div>
 
         {/* Plan section */}
@@ -239,19 +237,34 @@ export default function DoctorProfileView({ onLogout, onOpenPlans }: Props) {
           </div>
         </div>
 
-        {/* Mobile-only logout — full-width destructive-ish CTA at the
-            very bottom of the profile. Desktop has it in the header
-            cluster + the sidebar, so it doesn't need to live here on
-            sm+. */}
-        {onLogout && (
-          <button
-            type="button"
-            onClick={onLogout}
-            className="sm:hidden mt-8 w-full px-4 py-3 rounded-[10px] text-[14px] font-medium border border-gray-border bg-surface text-text-muted hover:bg-surface-2 cursor-pointer transition-colors"
-          >
-            Cerrar sesión
-          </button>
-        )}
+        {/* Mobile-only bottom CTAs.
+            - Editing: primary "Guardar cambios" full-width. The X next
+              to the name is the cancel affordance.
+            - Idle: secondary "Cerrar sesión" full-width at the very
+              bottom. Desktop has it in the sidebar + header cluster,
+              so it doesn't need to live here on sm+. */}
+        <div className="sm:hidden mt-8">
+          {editing ? (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full px-4 py-3 rounded-[10px] text-[14px] font-medium bg-primary text-surface hover:bg-[#2F3C2D] disabled:opacity-60 cursor-pointer transition-colors"
+            >
+              {saving ? 'Guardando…' : 'Guardar cambios'}
+            </button>
+          ) : (
+            onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="w-full px-4 py-3 rounded-[10px] text-[14px] font-medium border border-gray-border bg-surface text-text-muted hover:bg-surface-2 cursor-pointer transition-colors"
+              >
+                Cerrar sesión
+              </button>
+            )
+          )}
+        </div>
       </div>
     </div>
   )
