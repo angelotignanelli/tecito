@@ -112,7 +112,7 @@ export default function PatientsView({ patients, patientRows, onSelectPatient, s
         </div>
 
         {/* Search */}
-        <div className="relative mb-4 mt-4 sm:mt-0">
+        <div className="relative mb-4 mt-8 sm:mt-0">
           <Icon
             name="search"
             size={14}
