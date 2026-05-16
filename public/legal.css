@@ -1,0 +1,406 @@
+/* ────────────────────────────────────────────────────────────────
+   Tecito · Shared stylesheet for static pages
+   (about / terms / privacy / security)
+
+   Mirrors the design tokens of the React app (src/index.css) so the
+   static pages feel like a native continuation of the landing.
+   Fonts come from the same Google Fonts request as index.html.
+   ──────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Brand */
+  --color-primary: #3B4A38;
+  --color-primary-light: #ECEFE8;
+  --color-primary-mid: #B7C0B0;
+  --color-teal: #4F7565;
+  --color-teal-light: #E5EDE7;
+  --color-coral: #A24A32;
+  --color-coral-light: #F2E2DA;
+
+  /* Surfaces */
+  --color-bg: #F5F2EC;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #FAF7F1;
+  --color-surface-3: #EDE8DC;
+  --color-gray-border: #E8E2D4;
+  --color-gray-border-2: #D4CCBD;
+
+  /* Text */
+  --color-text: #1A1815;
+  --color-text-muted: #55504A;
+  --color-text-hint: #8A847C;
+  --color-text-dim: #B8B1A6;
+
+  /* Fonts */
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+::selection { background: var(--color-primary-mid); }
+
+a { color: inherit; text-decoration: none; }
+
+/* ────────────────────────────────────────────────────────────────
+   Sticky top nav — same blur + sand border as the landing.
+   ──────────────────────────────────────────────────────────────── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(245, 242, 236, 0.78);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-gray-border);
+}
+
+.nav-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  gap: 16px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 22px;
+  letter-spacing: -0.4px;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.brand:hover { opacity: 0.85; }
+
+.brand-mark {
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  transition: color 0.15s;
+}
+.nav-back:hover { color: var(--color-text); }
+.nav-back .arrow { font-size: 15px; line-height: 1; }
+
+/* ────────────────────────────────────────────────────────────────
+   Page container
+   ──────────────────────────────────────────────────────────────── */
+main.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Type system
+   ──────────────────────────────────────────────────────────────── */
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  color: var(--color-text-hint);
+  margin: 0 0 14px;
+  display: block;
+}
+
+h1 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(34px, 5.4vw, 56px);
+  letter-spacing: -1.1px;
+  line-height: 1.08;
+  color: var(--color-text);
+  margin: 0 0 18px;
+}
+
+h1 em {
+  font-style: italic;
+  color: var(--color-primary);
+}
+
+.updated {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-hint);
+  margin: 0 0 40px;
+}
+
+h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(22px, 2.6vw, 28px);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  color: var(--color-text);
+  margin: 44px 0 14px;
+}
+
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 19px;
+  color: var(--color-primary);
+  margin: 0 0 8px;
+}
+
+p {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  margin: 0 0 14px;
+  line-height: 1.65;
+}
+
+p.lede {
+  font-size: 18px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+p strong { color: var(--color-text); font-weight: 500; }
+
+ul {
+  padding-left: 22px;
+  margin: 0 0 14px;
+}
+
+li {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+li strong { color: var(--color-text); font-weight: 500; }
+
+a.inline {
+  color: var(--color-primary);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+a.inline:hover { border-bottom-color: var(--color-primary); }
+
+/* ────────────────────────────────────────────────────────────────
+   Card / pillar grid
+   ──────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-gray-border);
+  border-radius: 14px;
+  padding: 28px;
+  margin: 32px 0;
+}
+
+.card h2 { margin-top: 0; font-size: 22px; }
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin: 28px 0 8px;
+}
+
+.pillar {
+  background: var(--color-surface);
+  border: 1px solid var(--color-gray-border);
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.pillar h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--color-primary);
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+}
+
+.pillar p {
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   CTAs
+   ──────────────────────────────────────────────────────────────── */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  border: 1px solid transparent;
+  transition: transform 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.cta:hover { background: #2F3C2D; transform: translateY(-1px); }
+.cta .arrow { transition: transform 0.15s; }
+.cta:hover .arrow { transform: translateX(2px); }
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--color-text);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--color-gray-border-2);
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.ghost:hover { background: rgba(0, 0, 0, 0.03); }
+
+/* ────────────────────────────────────────────────────────────────
+   Footer — mirrors the landing footer (4 columns desktop / 2 mobile)
+   ──────────────────────────────────────────────────────────────── */
+footer.site-footer {
+  background: var(--color-surface-2);
+  border-top: 1px solid var(--color-gray-border);
+  padding: 56px 0 28px;
+  margin-top: 80px;
+}
+
+.footer-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+
+.footer-brand p {
+  color: var(--color-text-hint);
+  font-size: 13px;
+  max-width: 260px;
+  line-height: 1.6;
+  margin: 12px 0 0;
+}
+
+.footer-col h6 {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--color-text-hint);
+  font-weight: 500;
+  margin: 0 0 16px;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-col li { margin: 0; padding: 0; font-size: 13px; }
+
+.footer-col a {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  transition: color 0.15s;
+}
+.footer-col a:hover { color: var(--color-text); }
+
+.footer-bottom {
+  border-top: 1px solid var(--color-gray-border);
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-hint);
+}
+
+.footer-bottom a { color: inherit; }
+
+/* ────────────────────────────────────────────────────────────────
+   Responsive
+   ──────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px 24px;
+  }
+  .footer-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 700px) {
+  .nav-inner { padding: 14px 18px; }
+  .brand { font-size: 19px; gap: 8px; }
+  .nav-back { font-size: 12px; }
+  main.container { padding: 40px 20px 72px; }
+  h2 { margin-top: 36px; }
+  .pillars { grid-template-columns: 1fr; gap: 12px; }
+  .card { padding: 22px; margin: 26px 0; }
+  .footer-inner { padding: 0 20px; }
+  footer.site-footer { margin-top: 56px; padding: 44px 0 22px; }
+  .footer-bottom { flex-direction: column; gap: 6px; align-items: flex-start; }
+}
+
+@media (max-width: 420px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+  .footer-brand { grid-column: auto; }
+}
+
+/* Ensure links inside paragraphs still get the inline-link visual when
+   the author forgets the .inline class. */
+main.container p a:not(.cta):not(.ghost),
+main.container li a:not(.cta):not(.ghost) {
+  color: var(--color-primary);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+main.container p a:not(.cta):not(.ghost):hover,
+main.container li a:not(.cta):not(.ghost):hover {
+  border-bottom-color: var(--color-primary);
+}

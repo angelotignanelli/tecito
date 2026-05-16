@@ -1,180 +1,184 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Términos y Condiciones · Tecito</title>
-<meta name="description" content="Términos y condiciones de uso de Tecito.">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<style>
-  :root {
-    --primary: #3B4A38;
-    --text: #2A2A28;
-    --text-muted: #6B6B68;
-    --text-hint: #9B9B98;
-    --bg: #F5F2EC;
-    --surface: #FFFFFF;
-    --border: #E5E2DA;
-  }
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 56px 24px 80px;
-    color: var(--text);
-    line-height: 1.65;
-    background: var(--bg);
-  }
-  .back { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none; font-size: 13px; margin-bottom: 32px; }
-  .back:hover { color: var(--text); }
-  .eyebrow {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 11px;
-    color: var(--text-hint);
-    margin-bottom: 12px;
-  }
-  h1 {
-    font-family: Georgia, "Times New Roman", serif;
-    font-weight: 400;
-    font-size: 44px;
-    letter-spacing: -1px;
-    line-height: 1.1;
-    color: var(--text);
-    margin: 0 0 18px;
-  }
-  h1 em { color: var(--primary); }
-  .updated { font-family: ui-monospace, monospace; font-size: 12px; color: var(--text-hint); margin-bottom: 36px; }
-  h2 { font-family: Georgia, serif; font-weight: 400; font-size: 22px; color: var(--text); margin: 36px 0 10px; }
-  p { font-size: 15px; color: var(--text-muted); margin: 0 0 12px; }
-  p strong { color: var(--text); font-weight: 500; }
-  ul { padding-left: 20px; margin: 0 0 12px; }
-  li { font-size: 15px; color: var(--text-muted); margin-bottom: 6px; }
-  a.mail { color: var(--primary); }
-  .footer {
-    margin-top: 64px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-    font-family: ui-monospace, monospace;
-    font-size: 12px;
-    color: var(--text-hint);
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#3B4A38">
+  <meta name="color-scheme" content="light">
+  <title>Términos y condiciones · Tecito</title>
+  <meta name="description" content="Términos y condiciones de uso de Tecito — panel de gestión para profesionales de la salud independientes.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+
+  <link rel="stylesheet" href="/legal.css">
 </head>
 <body>
-<a href="/" class="back">← Volver a Tecito</a>
 
-<div class="eyebrow">Legal</div>
-<h1>Términos <em>y</em> condiciones.</h1>
-<div class="updated">Última actualización: 14 de mayo de 2026</div>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand" aria-label="Tecito — volver al inicio">
+      <svg class="brand-mark" width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="32" cy="32" r="32" fill="#3B4A38" />
+        <text x="20" y="48" font-family="Newsreader, Georgia, serif" font-size="34" font-style="italic" font-weight="500" fill="#FFFFFF">t</text>
+        <circle cx="42" cy="42" r="2.6" fill="#FFFFFF" />
+      </svg>
+      Tecito
+    </a>
+    <a href="/" class="nav-back"><span class="arrow" aria-hidden="true">←</span> Volver al inicio</a>
+  </div>
+</nav>
 
-<p>
-  Bienvenido a <strong>Tecito</strong>. Al crear una cuenta y usar nuestro servicio
-  aceptás los términos descriptos a continuación. Si no estás de acuerdo con alguno
-  de estos puntos, te pedimos que no uses la plataforma.
-</p>
+<main class="container">
+  <span class="eyebrow">Legal</span>
+  <h1>Términos <em>y</em> condiciones.</h1>
+  <div class="updated">Última actualización: 14 de mayo de 2026</div>
 
-<h2>1. Quién puede usar Tecito</h2>
-<p>
-  Tecito es un panel de gestión para profesionales de la salud independientes
-  (médicos, kinesiólogos, psicólogos, nutricionistas y similares) habilitados
-  legalmente en la República Argentina para ejercer su profesión. Sos responsable
-  de mantener vigentes tus matrículas y habilitaciones.
-</p>
+  <p class="lede">
+    Bienvenido a <strong>Tecito</strong>. Al crear una cuenta y usar nuestro servicio
+    aceptás los términos descriptos a continuación. Si no estás de acuerdo con alguno
+    de estos puntos, te pedimos que no uses la plataforma.
+  </p>
 
-<h2>2. Tu cuenta</h2>
-<ul>
-  <li>Sos responsable de mantener seguras tus credenciales de acceso.</li>
-  <li>No podés compartir tu cuenta con otros profesionales (cada profesional necesita la suya).</li>
-  <li>Todo lo que ocurra desde tu cuenta se considera realizado por vos.</li>
-</ul>
+  <h2>1. Quién puede usar Tecito</h2>
+  <p>
+    Tecito es un panel de gestión para profesionales de la salud independientes
+    (médicos, kinesiólogos, psicólogos, nutricionistas y similares) habilitados
+    legalmente en la República Argentina para ejercer su profesión. Sos responsable
+    de mantener vigentes tus matrículas y habilitaciones.
+  </p>
 
-<h2>3. Uso aceptable</h2>
-<p>
-  Está prohibido usar Tecito para:
-</p>
-<ul>
-  <li>Almacenar datos de pacientes a los que no atendés profesionalmente.</li>
-  <li>Enviar comunicaciones no solicitadas (spam) a través del bot de WhatsApp.</li>
-  <li>Intentar acceder a datos de otros profesionales o de la infraestructura.</li>
-  <li>Revender el servicio sin nuestro consentimiento expreso por escrito.</li>
-</ul>
+  <h2>2. Tu cuenta</h2>
+  <ul>
+    <li>Sos responsable de mantener seguras tus credenciales de acceso.</li>
+    <li>No podés compartir tu cuenta con otros profesionales (cada profesional necesita la suya).</li>
+    <li>Todo lo que ocurra desde tu cuenta se considera realizado por vos.</li>
+  </ul>
 
-<h2>4. Datos de pacientes</h2>
-<p>
-  Vos sos el <strong>responsable de los datos</strong> de tus pacientes según la Ley
-  25.326 de Protección de Datos Personales de la República Argentina. Tecito actúa
-  como <strong>encargado del tratamiento</strong>: almacenamos y procesamos esos
-  datos en tu nombre, exclusivamente para que vos puedas atender mejor a tus pacientes.
-</p>
-<p>
-  Los detalles de cómo manejamos los datos están en nuestra
-  <a href="/privacy.html" class="mail">Política de Privacidad</a>.
-</p>
+  <h2>3. Uso aceptable</h2>
+  <p>Está prohibido usar Tecito para:</p>
+  <ul>
+    <li>Almacenar datos de pacientes a los que no atendés profesionalmente.</li>
+    <li>Enviar comunicaciones no solicitadas (spam) a través del bot de WhatsApp.</li>
+    <li>Intentar acceder a datos de otros profesionales o de la infraestructura.</li>
+    <li>Revender el servicio sin nuestro consentimiento expreso por escrito.</li>
+  </ul>
 
-<h2>5. Planes y pagos</h2>
-<ul>
-  <li>Tecito ofrece un período de prueba gratuito de 14 días sin tarjeta.</li>
-  <li>Al finalizar la prueba, podés elegir un plan pago o seguir en plan Free con límites.</li>
-  <li>Los precios están expresados en pesos argentinos e incluyen IVA cuando corresponde.</li>
-  <li>Los pagos se renuevan automáticamente. Podés cancelar la renovación cuando quieras desde tu panel.</li>
-  <li>No realizamos reintegros por períodos ya iniciados, salvo que la ley lo exija.</li>
-</ul>
+  <h2>4. Datos de pacientes</h2>
+  <p>
+    Vos sos el <strong>responsable de los datos</strong> de tus pacientes según la Ley
+    25.326 de Protección de Datos Personales de la República Argentina. Tecito actúa
+    como <strong>encargado del tratamiento</strong>: almacenamos y procesamos esos
+    datos en tu nombre, exclusivamente para que vos puedas atender mejor a tus pacientes.
+  </p>
+  <p>
+    Los detalles de cómo manejamos los datos están en nuestra
+    <a href="/privacy.html">Política de Privacidad</a>.
+  </p>
 
-<h2>6. Disponibilidad del servicio</h2>
-<p>
-  Hacemos todo lo posible para mantener Tecito disponible 24/7, pero pueden ocurrir
-  interrupciones por mantenimiento, errores o causas externas (proveedores de
-  hosting, redes, WhatsApp Business API, etc.). No garantizamos un uptime específico.
-</p>
+  <h2>5. Planes y pagos</h2>
+  <ul>
+    <li>Tecito ofrece un período de prueba gratuito de 14 días sin tarjeta.</li>
+    <li>Al finalizar la prueba, podés elegir un plan pago o seguir en plan Free con límites.</li>
+    <li>Los precios están expresados en pesos argentinos e incluyen IVA cuando corresponde.</li>
+    <li>Los pagos se renuevan automáticamente. Podés cancelar la renovación cuando quieras desde tu panel.</li>
+    <li>No realizamos reintegros por períodos ya iniciados, salvo que la ley lo exija.</li>
+  </ul>
 
-<h2>7. Cancelación</h2>
-<p>
-  Podés cancelar tu cuenta cuando quieras desde tu panel o escribiéndonos a
-  <a href="mailto:hola@tecito.com.ar" class="mail">hola@tecito.com.ar</a>. Al cancelar,
-  podés exportar tus datos durante los 30 días posteriores. Después de ese plazo,
-  eliminamos toda tu información de nuestros servidores.
-</p>
+  <h2>6. Disponibilidad del servicio</h2>
+  <p>
+    Hacemos todo lo posible para mantener Tecito disponible 24/7, pero pueden ocurrir
+    interrupciones por mantenimiento, errores o causas externas (proveedores de
+    hosting, redes, WhatsApp Business API, etc.). No garantizamos un uptime específico.
+  </p>
 
-<h2>8. Limitación de responsabilidad</h2>
-<p>
-  Tecito es una herramienta administrativa, no reemplaza el criterio profesional ni
-  constituye consejo médico. <strong>Sos responsable de las decisiones clínicas y de
-  la información que cargás en la plataforma.</strong> Nuestra responsabilidad
-  económica se limita al monto pagado por vos en los 12 meses previos al hecho que
-  motive el reclamo.
-</p>
+  <h2>7. Cancelación</h2>
+  <p>
+    Podés cancelar tu cuenta cuando quieras desde tu panel o escribiéndonos a
+    <a href="mailto:hola@tecito.com.ar">hola@tecito.com.ar</a>. Al cancelar,
+    podés exportar tus datos durante los 30 días posteriores. Después de ese plazo,
+    eliminamos toda tu información de nuestros servidores.
+  </p>
 
-<h2>9. Cambios a estos términos</h2>
-<p>
-  Podemos actualizar estos términos para reflejar cambios en el servicio, requisitos
-  legales o mejoras. Te avisaremos por email con al menos 15 días de anticipación
-  cuando los cambios sean materiales. Si seguís usando Tecito después de la fecha
-  efectiva, se entiende que aceptás los cambios.
-</p>
+  <h2>8. Limitación de responsabilidad</h2>
+  <p>
+    Tecito es una herramienta administrativa, no reemplaza el criterio profesional ni
+    constituye consejo médico. <strong>Sos responsable de las decisiones clínicas y de
+    la información que cargás en la plataforma.</strong> Nuestra responsabilidad
+    económica se limita al monto pagado por vos en los 12 meses previos al hecho que
+    motive el reclamo.
+  </p>
 
-<h2>10. Ley aplicable</h2>
-<p>
-  Estos términos se rigen por las leyes de la República Argentina. Cualquier
-  controversia se resolverá ante los tribunales ordinarios de la Ciudad Autónoma
-  de Buenos Aires.
-</p>
+  <h2>9. Cambios a estos términos</h2>
+  <p>
+    Podemos actualizar estos términos para reflejar cambios en el servicio, requisitos
+    legales o mejoras. Te avisaremos por email con al menos 15 días de anticipación
+    cuando los cambios sean materiales. Si seguís usando Tecito después de la fecha
+    efectiva, se entiende que aceptás los cambios.
+  </p>
 
-<h2>Contacto</h2>
-<p>
-  Por consultas legales escribinos a
-  <a href="mailto:hola@tecito.com.ar" class="mail">hola@tecito.com.ar</a>.
-</p>
+  <h2>10. Ley aplicable</h2>
+  <p>
+    Estos términos se rigen por las leyes de la República Argentina. Cualquier
+    controversia se resolverá ante los tribunales ordinarios de la Ciudad Autónoma
+    de Buenos Aires.
+  </p>
 
-<div class="footer">
-  <span>© 2026 Tecito · Buenos Aires</span>
-  <a href="mailto:hola@tecito.com.ar" class="mail">hola@tecito.com.ar</a>
-</div>
+  <h2>Contacto</h2>
+  <p>
+    Por consultas legales escribinos a
+    <a href="mailto:hola@tecito.com.ar">hola@tecito.com.ar</a>.
+  </p>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="brand" aria-label="Tecito — inicio">
+          <svg class="brand-mark" width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="32" cy="32" r="32" fill="#3B4A38" />
+            <text x="20" y="48" font-family="Newsreader, Georgia, serif" font-size="34" font-style="italic" font-weight="500" fill="#FFFFFF">t</text>
+            <circle cx="42" cy="42" r="2.6" fill="#FFFFFF" />
+          </svg>
+          Tecito
+        </a>
+        <p>La forma más calma de gestionar tu consultorio. Hecho en Argentina, para Argentina.</p>
+      </div>
+      <div class="footer-col">
+        <h6>Producto</h6>
+        <ul>
+          <li><a href="/#funciona">Cómo funciona</a></li>
+          <li><a href="/#features">Funcionalidades</a></li>
+          <li><a href="/#precios">Precios</a></li>
+          <li><a href="/#paciente">Para pacientes</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h6>Empresa</h6>
+        <ul>
+          <li><a href="/about.html">Sobre nosotros</a></li>
+          <li><a href="mailto:hola@tecito.com.ar">Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h6>Legal</h6>
+        <ul>
+          <li><a href="/terms.html">Términos</a></li>
+          <li><a href="/privacy.html">Privacidad</a></li>
+          <li><a href="/security.html">Seguridad</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Tecito · Buenos Aires</span>
+      <a href="mailto:hola@tecito.com.ar">hola@tecito.com.ar</a>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

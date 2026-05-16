@@ -1,187 +1,186 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Política de Privacidad · Tecito</title>
-<meta name="description" content="Cómo Tecito recopila, usa y protege tus datos y los de tus pacientes.">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<style>
-  :root {
-    --primary: #3B4A38;
-    --text: #2A2A28;
-    --text-muted: #6B6B68;
-    --text-hint: #9B9B98;
-    --bg: #F5F2EC;
-    --surface: #FFFFFF;
-    --border: #E5E2DA;
-  }
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 56px 24px 80px;
-    color: var(--text);
-    line-height: 1.65;
-    background: var(--bg);
-  }
-  .back { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none; font-size: 13px; margin-bottom: 32px; }
-  .back:hover { color: var(--text); }
-  .eyebrow {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 11px;
-    color: var(--text-hint);
-    margin-bottom: 12px;
-  }
-  h1 {
-    font-family: Georgia, "Times New Roman", serif;
-    font-weight: 400;
-    font-size: 44px;
-    letter-spacing: -1px;
-    line-height: 1.1;
-    color: var(--text);
-    margin: 0 0 18px;
-  }
-  h1 em { color: var(--primary); }
-  .updated { font-family: ui-monospace, monospace; font-size: 12px; color: var(--text-hint); margin-bottom: 36px; }
-  h2 { font-family: Georgia, serif; font-weight: 400; font-size: 22px; color: var(--text); margin: 36px 0 10px; }
-  p { font-size: 15px; color: var(--text-muted); margin: 0 0 12px; }
-  p strong { color: var(--text); font-weight: 500; }
-  ul { padding-left: 20px; margin: 0 0 12px; }
-  li { font-size: 15px; color: var(--text-muted); margin-bottom: 6px; }
-  a.mail { color: var(--primary); }
-  .footer {
-    margin-top: 64px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-    font-family: ui-monospace, monospace;
-    font-size: 12px;
-    color: var(--text-hint);
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#3B4A38">
+  <meta name="color-scheme" content="light">
+  <title>Política de Privacidad · Tecito</title>
+  <meta name="description" content="Cómo Tecito recopila, usa y protege tus datos y los de tus pacientes.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+
+  <link rel="stylesheet" href="/legal.css">
 </head>
 <body>
-<a href="/" class="back">← Volver a Tecito</a>
 
-<div class="eyebrow">Legal</div>
-<h1>Política <em>de</em> privacidad.</h1>
-<div class="updated">Última actualización: 14 de mayo de 2026</div>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand" aria-label="Tecito — volver al inicio">
+      <svg class="brand-mark" width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="32" cy="32" r="32" fill="#3B4A38" />
+        <text x="20" y="48" font-family="Newsreader, Georgia, serif" font-size="34" font-style="italic" font-weight="500" fill="#FFFFFF">t</text>
+        <circle cx="42" cy="42" r="2.6" fill="#FFFFFF" />
+      </svg>
+      Tecito
+    </a>
+    <a href="/" class="nav-back"><span class="arrow" aria-hidden="true">←</span> Volver al inicio</a>
+  </div>
+</nav>
 
-<p>
-  En <strong>Tecito</strong> respetamos tu privacidad y la de tus pacientes. Este
-  documento explica qué datos recopilamos, para qué los usamos y cómo los protegemos.
-  Para entender las medidas técnicas de seguridad concretas, consultá nuestra
-  <a href="/security.html" class="mail">página de Seguridad</a>.
-</p>
+<main class="container">
+  <span class="eyebrow">Legal</span>
+  <h1>Política <em>de</em> privacidad.</h1>
+  <div class="updated">Última actualización: 14 de mayo de 2026</div>
 
-<h2>Quién es el responsable</h2>
-<p>
-  Tecito (en adelante, "nosotros") es el <strong>encargado del tratamiento</strong>
-  de los datos personales que cargás en la plataforma. Vos, como profesional, sos
-  el <strong>responsable</strong> de esos datos según la Ley 25.326 de la República
-  Argentina.
-</p>
+  <p class="lede">
+    En <strong>Tecito</strong> respetamos tu privacidad y la de tus pacientes. Este
+    documento explica qué datos recopilamos, para qué los usamos y cómo los protegemos.
+    Para entender las medidas técnicas concretas, consultá nuestra
+    <a href="/security.html">página de Seguridad</a>.
+  </p>
 
-<h2>Datos que recopilamos</h2>
-<p>Para que el servicio funcione, necesitamos almacenar:</p>
-<ul>
-  <li><strong>De vos (profesional):</strong> nombre, apellido, email, teléfono, matrícula, especialidad, consultorios y horarios.</li>
-  <li><strong>De tus pacientes:</strong> nombre, teléfono, email opcional, edad, cobertura, motivo de consulta y notas que tú decidas cargar.</li>
-  <li><strong>De los turnos:</strong> fecha, hora, consultorio, estado y motivo.</li>
-  <li><strong>Mensajes:</strong> historial de comunicaciones enviadas y recibidas a través del bot de WhatsApp.</li>
-  <li><strong>Técnicos:</strong> dirección IP, navegador y sistema operativo (solo para diagnóstico técnico y seguridad).</li>
-</ul>
+  <h2>Quién es el responsable</h2>
+  <p>
+    Tecito (en adelante, "nosotros") es el <strong>encargado del tratamiento</strong>
+    de los datos personales que cargás en la plataforma. Vos, como profesional, sos
+    el <strong>responsable</strong> de esos datos según la Ley 25.326 de la República
+    Argentina.
+  </p>
 
-<h2>Para qué usamos los datos</h2>
-<ul>
-  <li>Gestionar tu agenda y la de tus pacientes.</li>
-  <li>Enviar recordatorios automáticos por WhatsApp.</li>
-  <li>Mostrarte estadísticas y métricas de tu práctica.</li>
-  <li>Permitir que tus pacientes reserven turnos desde tu link público.</li>
-  <li>Resolver incidencias técnicas (con tu consentimiento explícito caso por caso).</li>
-  <li>Cumplir obligaciones legales y fiscales.</li>
-</ul>
+  <h2>Datos que recopilamos</h2>
+  <p>Para que el servicio funcione, necesitamos almacenar:</p>
+  <ul>
+    <li><strong>De vos (profesional):</strong> nombre, apellido, email, teléfono, matrícula, especialidad, consultorios y horarios.</li>
+    <li><strong>De tus pacientes:</strong> nombre, teléfono, email opcional, edad, cobertura, motivo de consulta y notas que tú decidas cargar.</li>
+    <li><strong>De los turnos:</strong> fecha, hora, consultorio, estado y motivo.</li>
+    <li><strong>Mensajes:</strong> historial de comunicaciones enviadas y recibidas a través del bot de WhatsApp.</li>
+    <li><strong>Técnicos:</strong> dirección IP, navegador y sistema operativo (solo para diagnóstico técnico y seguridad).</li>
+  </ul>
 
-<p>
-  <strong>No usamos tus datos para entrenar modelos de IA, no los vendemos
-  ni los compartimos con terceros para marketing.</strong>
-</p>
+  <h2>Para qué usamos los datos</h2>
+  <ul>
+    <li>Gestionar tu agenda y la de tus pacientes.</li>
+    <li>Enviar recordatorios automáticos por WhatsApp.</li>
+    <li>Mostrarte estadísticas y métricas de tu práctica.</li>
+    <li>Permitir que tus pacientes reserven turnos desde tu link público.</li>
+    <li>Resolver incidencias técnicas (con tu consentimiento explícito caso por caso).</li>
+    <li>Cumplir obligaciones legales y fiscales.</li>
+  </ul>
 
-<h2>Cómo los protegemos</h2>
-<p>
-  Tus datos se almacenan cifrados (AES-256 en reposo, TLS 1.3 en tránsito) en
-  servidores administrados por Supabase, con políticas Row-Level Security que
-  aíslan tus datos de los de otros profesionales. Más detalles en
-  <a href="/security.html" class="mail">Seguridad</a>.
-</p>
+  <p>
+    <strong>No usamos tus datos para entrenar modelos de IA, no los vendemos
+    ni los compartimos con terceros para marketing.</strong>
+  </p>
 
-<h2>Compartir datos con terceros</h2>
-<p>
-  Solo compartimos datos con proveedores estrictamente necesarios para que el servicio funcione:
-</p>
-<ul>
-  <li><strong>Supabase / AWS</strong> — almacenamiento y hosting.</li>
-  <li><strong>WhatsApp Business (Meta)</strong> — envío de mensajes a tus pacientes en tu nombre.</li>
-  <li><strong>Mercado Pago / proveedores de pago</strong> — procesar tu suscripción (no acceden a datos de pacientes).</li>
-</ul>
-<p>
-  Ninguno de estos terceros usa tus datos para fines propios.
-</p>
+  <h2>Cómo los protegemos</h2>
+  <p>
+    Tus datos se almacenan cifrados (AES-256 en reposo, TLS 1.3 en tránsito) en
+    servidores administrados por Supabase, con políticas Row-Level Security que
+    aíslan tus datos de los de otros profesionales. Más detalles en
+    <a href="/security.html">Seguridad</a>.
+  </p>
 
-<h2>Tus derechos</h2>
-<p>
-  La Ley 25.326 te otorga derechos de <strong>acceso, rectificación, supresión y
-  oposición</strong> sobre tus datos personales. Podés ejercerlos en cualquier
-  momento escribiendo a <a href="mailto:hola@tecito.com.ar" class="mail">hola@tecito.com.ar</a>.
-  Respondemos en un máximo de 10 días corridos.
-</p>
-<p>
-  Si querés eliminar tu cuenta y todos tus datos, podés hacerlo desde tu panel
-  o escribirnos. Después de 30 días de inactividad, eliminamos definitivamente
-  toda la información de nuestros servidores y backups.
-</p>
+  <h2>Compartir datos con terceros</h2>
+  <p>Solo compartimos datos con proveedores estrictamente necesarios para que el servicio funcione:</p>
+  <ul>
+    <li><strong>Supabase / AWS</strong> — almacenamiento y hosting.</li>
+    <li><strong>WhatsApp Business (Meta)</strong> — envío de mensajes a tus pacientes en tu nombre.</li>
+    <li><strong>Mercado Pago / proveedores de pago</strong> — procesar tu suscripción (no acceden a datos de pacientes).</li>
+  </ul>
+  <p>Ninguno de estos terceros usa tus datos para fines propios.</p>
 
-<h2>Datos de pacientes y el rol del profesional</h2>
-<p>
-  Cuando cargás un paciente en Tecito, vos sos el responsable legal de esos
-  datos. Te recomendamos:
-</p>
-<ul>
-  <li>Informar al paciente que sus datos serán cargados en un sistema digital de gestión.</li>
-  <li>Obtener su consentimiento para enviar recordatorios por WhatsApp.</li>
-  <li>Mantener tus matrículas y habilitaciones vigentes.</li>
-</ul>
+  <h2>Tus derechos</h2>
+  <p>
+    La Ley 25.326 te otorga derechos de <strong>acceso, rectificación, supresión y
+    oposición</strong> sobre tus datos personales. Podés ejercerlos en cualquier
+    momento escribiendo a <a href="mailto:hola@tecito.com.ar">hola@tecito.com.ar</a>.
+    Respondemos en un máximo de 10 días corridos.
+  </p>
+  <p>
+    Si querés eliminar tu cuenta y todos tus datos, podés hacerlo desde tu panel
+    o escribirnos. Después de 30 días de inactividad, eliminamos definitivamente
+    toda la información de nuestros servidores y backups.
+  </p>
 
-<h2>Cookies</h2>
-<p>
-  Usamos cookies estrictamente necesarias para mantener tu sesión iniciada y
-  recordar tus preferencias de interfaz. No usamos cookies de seguimiento
-  publicitario ni de terceros con fines de marketing.
-</p>
+  <h2>Datos de pacientes y el rol del profesional</h2>
+  <p>Cuando cargás un paciente en Tecito, vos sos el responsable legal de esos datos. Te recomendamos:</p>
+  <ul>
+    <li>Informar al paciente que sus datos serán cargados en un sistema digital de gestión.</li>
+    <li>Obtener su consentimiento para enviar recordatorios por WhatsApp.</li>
+    <li>Mantener tus matrículas y habilitaciones vigentes.</li>
+  </ul>
 
-<h2>Cambios a esta política</h2>
-<p>
-  Si actualizamos esta política, te avisaremos por email con al menos 15 días
-  de anticipación cuando los cambios sean materiales. La versión vigente
-  siempre está disponible en esta URL.
-</p>
+  <h2>Cookies</h2>
+  <p>
+    Usamos cookies estrictamente necesarias para mantener tu sesión iniciada y
+    recordar tus preferencias de interfaz. No usamos cookies de seguimiento
+    publicitario ni de terceros con fines de marketing.
+  </p>
 
-<h2>Contacto</h2>
-<p>
-  Por consultas sobre privacidad o para ejercer tus derechos:
-  <a href="mailto:hola@tecito.com.ar" class="mail">hola@tecito.com.ar</a>.
-</p>
+  <h2>Cambios a esta política</h2>
+  <p>
+    Si actualizamos esta política, te avisaremos por email con al menos 15 días
+    de anticipación cuando los cambios sean materiales. La versión vigente
+    siempre está disponible en esta URL.
+  </p>
 
-<div class="footer">
-  <span>© 2026 Tecito · Buenos Aires</span>
-  <a href="mailto:hola@tecito.com.ar" class="mail">hola@tecito.com.ar</a>
-</div>
+  <h2>Contacto</h2>
+  <p>
+    Por consultas sobre privacidad o para ejercer tus derechos:
+    <a href="mailto:hola@tecito.com.ar">hola@tecito.com.ar</a>.
+  </p>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="brand" aria-label="Tecito — inicio">
+          <svg class="brand-mark" width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="32" cy="32" r="32" fill="#3B4A38" />
+            <text x="20" y="48" font-family="Newsreader, Georgia, serif" font-size="34" font-style="italic" font-weight="500" fill="#FFFFFF">t</text>
+            <circle cx="42" cy="42" r="2.6" fill="#FFFFFF" />
+          </svg>
+          Tecito
+        </a>
+        <p>La forma más calma de gestionar tu consultorio. Hecho en Argentina, para Argentina.</p>
+      </div>
+      <div class="footer-col">
+        <h6>Producto</h6>
+        <ul>
+          <li><a href="/#funciona">Cómo funciona</a></li>
+          <li><a href="/#features">Funcionalidades</a></li>
+          <li><a href="/#precios">Precios</a></li>
+          <li><a href="/#paciente">Para pacientes</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h6>Empresa</h6>
+        <ul>
+          <li><a href="/about.html">Sobre nosotros</a></li>
+          <li><a href="mailto:hola@tecito.com.ar">Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h6>Legal</h6>
+        <ul>
+          <li><a href="/terms.html">Términos</a></li>
+          <li><a href="/privacy.html">Privacidad</a></li>
+          <li><a href="/security.html">Seguridad</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Tecito · Buenos Aires</span>
+      <a href="mailto:hola@tecito.com.ar">hola@tecito.com.ar</a>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>
