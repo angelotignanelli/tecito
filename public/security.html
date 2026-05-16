@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seguridad · Tecito</title>
+<meta name="description" content="Cómo Tecito protege los datos de tu consultorio: cifrado, aislamiento por profesional y buenas prácticas.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+  :root {
+    --primary: #3B4A38;
+    --primary-light: #E8EFE5;
+    --text: #2A2A28;
+    --text-muted: #6B6B68;
+    --text-hint: #9B9B98;
+    --bg: #F5F2EC;
+    --surface: #FFFFFF;
+    --border: #E5E2DA;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+    color: var(--text);
+    line-height: 1.65;
+    background: var(--bg);
+  }
+  .back { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none; font-size: 13px; margin-bottom: 32px; }
+  .back:hover { color: var(--text); }
+  .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 11px;
+    color: var(--text-hint);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: 44px;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    color: var(--text);
+    margin: 0 0 28px;
+  }
+  h1 em { color: var(--primary); }
+  h2 { font-family: Georgia, serif; font-weight: 400; font-size: 24px; color: var(--text); margin: 40px 0 12px; }
+  p { font-size: 16px; color: var(--text-muted); margin: 0 0 14px; }
+  p strong { color: var(--text); font-weight: 500; }
+  ul { padding-left: 20px; margin: 0 0 14px; }
+  li { font-size: 16px; color: var(--text-muted); margin-bottom: 8px; }
+  li strong { color: var(--text); font-weight: 500; }
+  a.mail { color: var(--primary); }
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 28px 0;
+  }
+  .pillar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .pillar h3 {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--primary);
+    margin: 0 0 8px;
+  }
+  .pillar p {
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.55;
+  }
+  .footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--text-hint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+</style>
+</head>
+<body>
+<a href="/" class="back">← Volver a Tecito</a>
+
+<div class="eyebrow">Seguridad</div>
+<h1>Tus datos, tratados <em>como historia clínica</em>.</h1>
+
+<p>
+  Trabajás con información sensible: nombres, contactos, motivos de consulta,
+  observaciones clínicas. En Tecito asumimos por defecto que toda esa información
+  es <strong>confidencial e irreemplazable</strong>, y construimos el sistema con
+  esa premisa.
+</p>
+
+<div class="pillars">
+  <div class="pillar">
+    <h3>Cifrado</h3>
+    <p>Todo viaja por HTTPS (TLS 1.3) y se almacena cifrado en reposo con AES-256.</p>
+  </div>
+  <div class="pillar">
+    <h3>Aislamiento</h3>
+    <p>Cada profesional ve solo sus datos. Row-Level Security en la base impide accesos cruzados.</p>
+  </div>
+  <div class="pillar">
+    <h3>Backups</h3>
+    <p>Respaldos automáticos diarios con retención de 30 días, recuperables a cualquier punto.</p>
+  </div>
+  <div class="pillar">
+    <h3>Sin venta de datos</h3>
+    <p>No vendemos ni compartimos datos con terceros. Nunca. Ese es nuestro modelo de negocio.</p>
+  </div>
+</div>
+
+<h2>Cómo guardamos los datos</h2>
+<ul>
+  <li><strong>Hosting:</strong> Supabase (Postgres administrado) en regiones de AWS con certificaciones SOC 2 Tipo II e ISO 27001.</li>
+  <li><strong>Cifrado en reposo:</strong> AES-256 a nivel disco, gestionado por AWS KMS.</li>
+  <li><strong>Cifrado en tránsito:</strong> TLS 1.3 obligatorio. No aceptamos conexiones sin cifrar.</li>
+  <li><strong>Autenticación:</strong> contraseñas hasheadas con bcrypt + tokens JWT firmados con rotación periódica.</li>
+  <li><strong>Aislamiento por profesional:</strong> políticas Row-Level Security (RLS) en Postgres impiden que la consulta de un médico devuelva filas de otro, incluso en caso de bug en el código de aplicación.</li>
+</ul>
+
+<h2>Acceso a tus datos</h2>
+<p>
+  Solo vos tenés acceso a los datos de tu consultorio. Internamente, ningún miembro
+  del equipo de Tecito puede leer la información clínica de tus pacientes salvo que
+  vos lo autorices explícitamente para resolver un ticket de soporte — y siempre
+  con audit log de qué se vio y cuándo.
+</p>
+
+<h2>WhatsApp y comunicaciones</h2>
+<p>
+  Los mensajes con tus pacientes pasan por la API oficial de
+  <strong>WhatsApp Business (Meta)</strong>. Tecito envía los mensajes en tu nombre
+  pero no los almacena fuera de lo necesario para mostrar el historial en tu panel.
+  Meta tiene sus propias políticas de privacidad para los mensajes en tránsito.
+</p>
+
+<h2>Buenas prácticas de tu lado</h2>
+<p>
+  La cadena de seguridad termina en vos. Te recomendamos:
+</p>
+<ul>
+  <li>Usar una contraseña única y fuerte para Tecito (no la misma del email).</li>
+  <li>No compartir tu cuenta con asistentes — si necesitás múltiples usuarios, pedinos plan organización.</li>
+  <li>Cerrar sesión en computadoras compartidas (consultorios con varios profesionales).</li>
+  <li>Activar el bloqueo de pantalla en tu celular si usás Tecito desde ahí.</li>
+</ul>
+
+<h2>Reportar una vulnerabilidad</h2>
+<p>
+  Si encontraste un problema de seguridad, escribinos a
+  <a href="mailto:hola@tecito.com.ar" class="mail">hola@tecito.com.ar</a> con
+  el asunto "Security report". Respondemos en menos de 48 horas y agradecemos
+  públicamente a quienes nos ayudan a hacer Tecito más seguro (con tu permiso).
+</p>
+
+<h2>Cumplimiento normativo</h2>
+<p>
+  Tecito está alineado con la <strong>Ley 25.326</strong> de Protección de Datos
+  Personales de la República Argentina. Estamos trabajando para certificar
+  ISO 27001 a lo largo de 2026.
+</p>
+
+<div class="footer">
+  <span>© 2026 Tecito · Buenos Aires</span>
+  <a href="mailto:hola@tecito.com.ar" class="mail">hola@tecito.com.ar</a>
+</div>
+</body>
+</html>

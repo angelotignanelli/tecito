@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sobre nosotros · Tecito</title>
+<meta name="description" content="Tecito es la forma más calma de gestionar tu consultorio. Hecho en Argentina, para profesionales independientes.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+  :root {
+    --primary: #3B4A38;
+    --primary-light: #E8EFE5;
+    --text: #2A2A28;
+    --text-muted: #6B6B68;
+    --text-hint: #9B9B98;
+    --bg: #F5F2EC;
+    --surface: #FFFFFF;
+    --border: #E5E2DA;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+    color: var(--text);
+    line-height: 1.65;
+    background: var(--bg);
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    margin-bottom: 32px;
+  }
+  .back:hover { color: var(--text); }
+  .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 11px;
+    color: var(--text-hint);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: 44px;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    color: var(--text);
+    margin: 0 0 28px;
+  }
+  h1 em { color: var(--primary); }
+  h2 {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    font-size: 24px;
+    color: var(--text);
+    margin: 40px 0 12px;
+  }
+  p { font-size: 16px; color: var(--text-muted); margin: 0 0 14px; }
+  p strong { color: var(--text); font-weight: 500; }
+  ul { padding-left: 20px; margin: 0 0 14px; }
+  li { font-size: 16px; color: var(--text-muted); margin-bottom: 6px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin: 32px 0;
+  }
+  .footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--text-hint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  a.cta {
+    display: inline-block;
+    background: var(--primary);
+    color: var(--surface);
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 8px;
+  }
+  a.cta:hover { background: #2F3C2D; }
+  a.mail { color: var(--primary); }
+</style>
+</head>
+<body>
+<a href="/" class="back">← Volver a Tecito</a>
+
+<div class="eyebrow">Sobre nosotros</div>
+<h1>Hecho en Argentina, <em>para</em> profesionales independientes.</h1>
+
+<p>
+  Tecito nació de una observación simple: los profesionales de la salud independientes
+  pasan demasiado tiempo gestionando turnos, recordatorios y planillas — y muy poco
+  atendiendo a sus pacientes.
+</p>
+
+<p>
+  Existen sistemas para clínicas grandes y existen agendas de papel. En el medio,
+  prácticamente nada que entienda cómo trabaja un kinesiólogo, un psicólogo, una
+  nutricionista o un médico de cabecera con su propio consultorio.
+</p>
+
+<h2>Qué creemos</h2>
+
+<p>
+  Creemos que la herramienta tiene que <strong>desaparecer</strong>. Que abrir Tecito
+  el lunes a la mañana se tiene que sentir como abrir una agenda buena — calma, clara,
+  sin ruido. Sin pop-ups, sin upsells, sin diez tabs que no entendés para qué sirven.
+</p>
+
+<p>
+  Creemos también que los datos de los pacientes son sagrados. Por eso todo lo que
+  guardamos está cifrado, vive en servidores que vos controlás (cuenta propia) y nunca
+  se comparte con terceros.
+</p>
+
+<h2>El equipo</h2>
+
+<p>
+  Somos un equipo pequeño con base en Buenos Aires. Diseñamos y construimos Tecito
+  trabajando codo a codo con profesionales reales — kinesiólogos, psicólogas, médicos
+  que nos prestan su consultorio una vez por semana para que veamos cómo se usa de verdad.
+</p>
+
+<div class="card">
+  <h2 style="margin-top: 0; font-size: 20px;">¿Querés hablar con nosotros?</h2>
+  <p style="margin-bottom: 16px;">
+    Si tenés feedback, una idea, o querés contarnos cómo trabajás en tu consultorio,
+    nos encantaría escucharte.
+  </p>
+  <a href="mailto:hola@tecito.com.ar" class="cta">Escribinos a hola@tecito.com.ar</a>
+</div>
+
+<div class="footer">
+  <span>© 2026 Tecito · Buenos Aires</span>
+  <a href="mailto:hola@tecito.com.ar" class="mail">hola@tecito.com.ar</a>
+</div>
+</body>
+</html>

@@ -1048,10 +1048,13 @@ function Footer({ onScrollTo }: { onScrollTo: (id: string) => void }) {
             { label: 'Para pacientes', onClick: () => onScrollTo('paciente') },
           ]} />
           <FooterCol title="Empresa" items={[
-            { label: 'Sobre nosotros' }, { label: 'Contacto', href: 'mailto:hola@tecito.com.ar' }, { label: 'Blog' },
+            { label: 'Sobre nosotros', href: '/about.html' },
+            { label: 'Contacto', href: 'mailto:hola@tecito.com.ar' },
           ]} />
           <FooterCol title="Legal" items={[
-            { label: 'Términos' }, { label: 'Privacidad', href: '/privacy.html' }, { label: 'Seguridad' },
+            { label: 'Términos', href: '/terms.html' },
+            { label: 'Privacidad', href: '/privacy.html' },
+            { label: 'Seguridad', href: '/security.html' },
           ]} />
         </div>
         <div
