@@ -18,7 +18,85 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-import { buildIcs } from './_lib/ics'
+
+// ─── Inline ICS (single-event RFC 5545) ──────────────────────────────────────
+// Previously lived at ./_lib/ics — moved here because Vercel's bundler was
+// throwing FUNCTION_INVOCATION_FAILED when this endpoint imported relative
+// files from /api/_lib/. Until we have a proper monorepo-style build for the
+// /api/ folder, everything this endpoint needs lives in this single file.
+
+interface IcsEvent {
+  uid: string
+  date: string
+  time: string
+  durationMin: number
+  summary: string
+  description?: string
+  location?: string
+  organizerName?: string
+  organizerEmail?: string
+  withReminders?: boolean
+}
+
+function icsUtcStamp(date: string, time: string, offsetMin = 0): string {
+  const [y, m, d] = date.split('-').map(Number)
+  const [hh, mm] = time.slice(0, 5).split(':').map(Number)
+  const utc = new Date(Date.UTC(y, m - 1, d, hh + 3, mm + offsetMin, 0))
+  return icsFormatStamp(utc)
+}
+function icsNowStamp(): string {
+  return icsFormatStamp(new Date())
+}
+function icsFormatStamp(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`
+}
+function icsEscape(s: string): string {
+  return (s || '').replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;').replace(/\n/g, '\\n').replace(/\r/g, '')
+}
+function icsFoldLine(line: string): string {
+  if (line.length <= 75) return line
+  const out: string[] = []
+  let rest = line
+  out.push(rest.slice(0, 75))
+  rest = rest.slice(75)
+  while (rest.length > 74) {
+    out.push(' ' + rest.slice(0, 74))
+    rest = rest.slice(74)
+  }
+  if (rest.length > 0) out.push(' ' + rest)
+  return out.join('\r\n')
+}
+function buildIcs(evt: IcsEvent): string {
+  const lines: string[] = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Tecito//Booking Confirmation//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:REQUEST',
+    'BEGIN:VEVENT',
+    `UID:${evt.uid}@tecito.com.ar`,
+    `DTSTAMP:${icsNowStamp()}`,
+    `DTSTART:${icsUtcStamp(evt.date, evt.time, 0)}`,
+    `DTEND:${icsUtcStamp(evt.date, evt.time, evt.durationMin)}`,
+    icsFoldLine(`SUMMARY:${icsEscape(evt.summary)}`),
+  ]
+  if (evt.description) lines.push(icsFoldLine(`DESCRIPTION:${icsEscape(evt.description)}`))
+  if (evt.location) lines.push(icsFoldLine(`LOCATION:${icsEscape(evt.location)}`))
+  if (evt.organizerEmail) {
+    const cn = evt.organizerName ? `;CN=${icsEscape(evt.organizerName)}` : ''
+    lines.push(icsFoldLine(`ORGANIZER${cn}:mailto:${evt.organizerEmail}`))
+  }
+  lines.push('STATUS:CONFIRMED', 'TRANSP:OPAQUE')
+  if (evt.withReminders) {
+    lines.push(
+      'BEGIN:VALARM', 'TRIGGER:-PT24H', 'ACTION:DISPLAY', 'DESCRIPTION:Recordatorio: turno mañana', 'END:VALARM',
+      'BEGIN:VALARM', 'TRIGGER:-PT2H', 'ACTION:DISPLAY', 'DESCRIPTION:Recordatorio: turno en 2 horas', 'END:VALARM',
+    )
+  }
+  lines.push('END:VEVENT', 'END:VCALENDAR')
+  return lines.join('\r\n')
+}
 
 const SUPABASE_URL = (process.env.SUPABASE_URL ?? '').trim()
 const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim()
