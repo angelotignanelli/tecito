@@ -64,12 +64,17 @@ function icsFoldLine(line: string): string {
   return out.join('\r\n')
 }
 function buildIcs(evt: IcsEvent): string {
+  // METHOD:PUBLISH, not REQUEST. PUBLISH is "this is an event I'm sharing
+  // with you"; REQUEST is "I'm inviting you, please RSVP". REQUEST is
+  // stricter (RFC 5546 requires ATTENDEE + ORGANIZER with valid mailtos)
+  // and Gmail rejects malformed REQUEST events with "no se puede cargar el
+  // evento". PUBLISH parses cleanly even without an organizer/attendee.
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Tecito//Booking Confirmation//ES',
     'CALSCALE:GREGORIAN',
-    'METHOD:REQUEST',
+    'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${evt.uid}@tecito.com.ar`,
     `DTSTAMP:${icsNowStamp()}`,
@@ -79,11 +84,13 @@ function buildIcs(evt: IcsEvent): string {
   ]
   if (evt.description) lines.push(icsFoldLine(`DESCRIPTION:${icsEscape(evt.description)}`))
   if (evt.location) lines.push(icsFoldLine(`LOCATION:${icsEscape(evt.location)}`))
-  if (evt.organizerEmail) {
-    const cn = evt.organizerName ? `;CN=${icsEscape(evt.organizerName)}` : ''
-    lines.push(icsFoldLine(`ORGANIZER${cn}:mailto:${evt.organizerEmail}`))
-  }
-  lines.push('STATUS:CONFIRMED', 'TRANSP:OPAQUE')
+  // ORGANIZER is optional in PUBLISH but Gmail uses it to render "from".
+  // Fall back to the Tecito brand mailbox when the doctor doesn't have an
+  // email on file so the parser still gets a valid mailto.
+  const organizerEmail = evt.organizerEmail || 'hola@tecito.com.ar'
+  const organizerName = evt.organizerName || 'Tecito'
+  lines.push(icsFoldLine(`ORGANIZER;CN=${icsEscape(organizerName)}:mailto:${organizerEmail}`))
+  lines.push('STATUS:CONFIRMED', 'TRANSP:OPAQUE', 'SEQUENCE:0')
   if (evt.withReminders) {
     lines.push(
       'BEGIN:VALARM', 'TRIGGER:-PT24H', 'ACTION:DISPLAY', 'DESCRIPTION:Recordatorio: turno mañana', 'END:VALARM',
@@ -384,7 +391,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         subject: `Tu turno con ${doctorFullName} — ${dateLabel} ${timeLabel} hs`,
         html,
         attachments: [
-          { filename: 'turno.ics', content: Buffer.from(ics, 'utf-8').toString('base64') },
+          {
+            filename: icsFilename,
+            content: Buffer.from(ics, 'utf-8').toString('base64'),
+            // Force the correct MIME so Gmail's inline calendar parser picks
+            // it up. Without this, Resend defaults to application/octet-stream
+            // and Gmail just shows "Cannot load event".
+            contentType: 'text/calendar; charset=UTF-8; method=PUBLISH',
+          },
         ],
       })
 
