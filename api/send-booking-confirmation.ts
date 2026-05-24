@@ -18,9 +18,9 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { render } from '@react-email/render'
 import * as React from 'react'
-import { BookingConfirmation } from './_emails/BookingConfirmation.js'
-import { NewBookingNotification } from './_emails/NewBookingNotification.js'
-import { buildIcs } from './_lib/ics.js'
+import { BookingConfirmation } from './_emails/BookingConfirmation'
+import { NewBookingNotification } from './_emails/NewBookingNotification'
+import { buildIcs } from './_lib/ics'
 
 const SUPABASE_URL = (process.env.SUPABASE_URL ?? '').trim()
 const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim()
