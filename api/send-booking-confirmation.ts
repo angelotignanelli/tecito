@@ -103,7 +103,11 @@ const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').
 const RESEND_API_KEY = (process.env.RESEND_API_KEY ?? '').trim()
 const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL ?? 'https://tecito.com.ar').trim()
 
-const FROM = 'Tecito <hola@send.tecito.com.ar>'
+// Resend verified the root domain (DKIM lives at resend._domainkey.tecito.com.ar)
+// and the API key is scoped to tecito.com.ar — keep the From on the root so
+// they match. The send.tecito.com.ar subdomain is used only by Resend's MX/SPF
+// envelope records, not as the visible From.
+const FROM = 'Tecito <hola@tecito.com.ar>'
 const REPLY_TO = 'hola@tecito.com.ar'
 
 const COLORS = {
