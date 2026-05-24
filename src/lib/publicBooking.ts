@@ -304,7 +304,7 @@ export async function createBooking(req: BookingRequest): Promise<{ success: boo
     patientId = newPatient.id
   }
 
-  const { error: aptErr } = await supabase
+  const { data: insertedApt, error: aptErr } = await supabase
     .from('appointments')
     .insert({
       doctor_id: req.doctorId,
@@ -317,7 +317,45 @@ export async function createBooking(req: BookingRequest): Promise<{ success: boo
       detail: 'Turno solicitado desde la página pública',
       status: 'pendiente',
     })
+    .select('id')
+    .single()
 
   if (aptErr) return { success: false, error: aptErr.message }
+
+  // Fire-and-forget: kick off the email notifications. We deliberately don't
+  // await this in a blocking way, but we DO await with a short timeout so we
+  // can log failures without keeping the user staring at a spinner. The
+  // booking is already saved at this point; an email failure shouldn't roll
+  // it back or surface to the UI — the doctor sees the turno in their panel
+  // either way.
+  if (insertedApt?.id) {
+    void notifyBookingCreated(insertedApt.id)
+  }
+
   return { success: true }
+}
+
+/**
+ * Calls the Vercel function that sends the patient confirmation + doctor
+ * notification mails. Fire-and-forget from the caller's perspective; this
+ * function never throws. Failures land in the browser console for debugging
+ * but don't propagate.
+ */
+async function notifyBookingCreated(appointmentId: string): Promise<void> {
+  try {
+    const ctrl = new AbortController()
+    const timeout = setTimeout(() => ctrl.abort(), 8000)
+    const resp = await fetch('/api/send-booking-confirmation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appointmentId }),
+      signal: ctrl.signal,
+    })
+    clearTimeout(timeout)
+    if (!resp.ok) {
+      console.warn('[booking-email] non-2xx response', resp.status)
+    }
+  } catch (err) {
+    console.warn('[booking-email] notify failed', err)
+  }
 }
