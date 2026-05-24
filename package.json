@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/generate-seo.mjs",
+    "build": "tsx scripts/build-emails.ts && vite build && node scripts/generate-seo.mjs",
+    "build:emails": "tsx scripts/build-emails.ts",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -34,6 +35,7 @@
     "globals": "^17.4.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.2.2",
+    "tsx": "^4.22.3",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
     "vite": "^8.0.1"

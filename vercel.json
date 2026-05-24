@@ -1,5 +1,10 @@
 {
   "cleanUrls": true,
+  "functions": {
+    "api/send-booking-confirmation.ts": {
+      "includeFiles": "api/_compiled-emails/**"
+    }
+  },
   "crons": [
     {
       "path": "/api/cron-expire-plans",

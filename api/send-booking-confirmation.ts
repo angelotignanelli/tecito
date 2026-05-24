@@ -7,23 +7,19 @@
 // Called from the client (src/lib/publicBooking.ts) immediately after the
 // appointments INSERT succeeds.
 //
-// Email HTML is composed inline as plain strings rather than via React
-// Email. We tried the React Email + .tsx subfolder approach first; Vercel's
-// serverless bundler was throwing FUNCTION_INVOCATION_FAILED on cold start
-// (couldn't resolve the .tsx files at runtime). The pragmatic choice while
-// we don't have a build step that pre-renders templates is to ship the
-// markup inline — it's repetitive but every line is exactly what the
-// recipient sees, no surprise compilation step in the middle.
+// Email HTML is precompiled by scripts/build-emails.ts from the React Email
+// templates in /emails/. The compiled HTML files live in /api/_compiled-emails/
+// with {{placeholder}} tokens; we substitute the runtime values here. Vercel
+// is told to ship those files alongside the function via the `includeFiles`
+// directive in vercel.json.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 // ─── Inline ICS (single-event RFC 5545) ──────────────────────────────────────
-// Previously lived at ./_lib/ics — moved here because Vercel's bundler was
-// throwing FUNCTION_INVOCATION_FAILED when this endpoint imported relative
-// files from /api/_lib/. Until we have a proper monorepo-style build for the
-// /api/ folder, everything this endpoint needs lives in this single file.
 
 interface IcsEvent {
   uid: string
@@ -98,30 +94,18 @@ function buildIcs(evt: IcsEvent): string {
   return lines.join('\r\n')
 }
 
+// ─── Config ──────────────────────────────────────────────────────────────────
+
 const SUPABASE_URL = (process.env.SUPABASE_URL ?? '').trim()
 const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim()
 const RESEND_API_KEY = (process.env.RESEND_API_KEY ?? '').trim()
 const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL ?? 'https://tecito.com.ar').trim()
 
-// Resend verified the root domain (DKIM lives at resend._domainkey.tecito.com.ar)
-// and the API key is scoped to tecito.com.ar — keep the From on the root so
-// they match. The send.tecito.com.ar subdomain is used only by Resend's MX/SPF
-// envelope records, not as the visible From.
+// Resend verified the root domain — DKIM lives at resend._domainkey.tecito.com.ar
+// and the API key is scoped to tecito.com.ar. Keep the visible From on the root
+// so they match; send.tecito.com.ar exists only as Resend's MX/SPF envelope.
 const FROM = 'Tecito <hola@tecito.com.ar>'
 const REPLY_TO = 'hola@tecito.com.ar'
-
-const COLORS = {
-  primary: '#3B4A38',
-  bg: '#F5F2EC',
-  surface: '#FFFFFF',
-  border: '#E8E2D4',
-  text: '#1A1815',
-  textMuted: '#55504A',
-  textHint: '#8A847C',
-}
-const F_SERIF = 'Georgia, "Times New Roman", serif'
-const F_SANS = '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif'
-const F_MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _admin: any = null
@@ -147,6 +131,47 @@ function resend(): Resend {
   return _resend
 }
 
+// ─── Template loading + rendering ────────────────────────────────────────────
+// Read once at module init, reused across invocations within the same warm
+// container. Pre-warming the cache here means the first cold-start pays the
+// disk read once and never again.
+
+const TEMPLATES_DIR = join(process.cwd(), 'api', '_compiled-emails')
+
+let _patientTemplate: string | null = null
+let _doctorTemplate: string | null = null
+
+function loadTemplate(name: string): string {
+  return readFileSync(join(TEMPLATES_DIR, `${name}.html`), 'utf-8')
+}
+
+function getPatientTemplate(): string {
+  if (!_patientTemplate) _patientTemplate = loadTemplate('booking-confirmation')
+  return _patientTemplate
+}
+
+function getDoctorTemplate(): string {
+  if (!_doctorTemplate) _doctorTemplate = loadTemplate('new-booking-notification')
+  return _doctorTemplate
+}
+
+/** Replace every `{{key}}` placeholder in `html` with HTML-escaped `vars[key]`. */
+function renderTemplate(html: string, vars: Record<string, string>): string {
+  return html.replace(/\{\{(\w+)\}\}/g, (_match, key: string) => {
+    const value = vars[key]
+    if (value === undefined) {
+      // Missing key → render empty rather than leave the literal {{key}} in
+      // the message body. Worth a console warning in case a template gets out
+      // of sync with the data we pass in.
+      console.warn(`[send-booking] missing template var "${key}"`)
+      return ''
+    }
+    return esc(value)
+  })
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 const WEEKDAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
 const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
@@ -167,7 +192,7 @@ function parseDurationMinutes(duration: string | null | undefined): number {
   return parseInt(m[1], 10) * 60 + parseInt(m[2], 10)
 }
 
-/** Minimal HTML escape for text injected into the markup. */
+/** Minimal HTML escape for text injected into the markup or attribute values. */
 function esc(s: string | null | undefined): string {
   return (s ?? '')
     .replace(/&/g, '&amp;')
@@ -192,156 +217,7 @@ function buildCancelMailto(args: {
   return `mailto:${to}?subject=${subject}&body=${body}`
 }
 
-/** Shared chrome used by both emails. */
-function shell(opts: { preheader: string; body: string }): string {
-  return `<!DOCTYPE html>
-<html lang="es-AR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="color-scheme" content="light only">
-<title>Tecito</title>
-</head>
-<body style="margin:0;padding:0;background:${COLORS.bg};font-family:${F_SANS};color:${COLORS.text};">
-<div style="display:none;font-size:0;line-height:0;color:transparent;max-height:0;max-width:0;opacity:0;overflow:hidden;">${esc(opts.preheader)}</div>
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${COLORS.bg};">
-  <tr><td align="center">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;margin:0 auto;">
-      <tr><td style="padding:40px 24px 0 24px;">
-        <div style="font-family:${F_SERIF};font-style:italic;font-size:24px;color:${COLORS.primary};letter-spacing:-0.4px;line-height:1;margin-bottom:24px;">Tecito</div>
-      </td></tr>
-      <tr><td style="padding:0 24px;">
-        ${opts.body}
-      </td></tr>
-      <tr><td style="padding:32px 24px 48px 24px;">
-        <hr style="border:0;border-top:1px solid ${COLORS.border};margin:0 0 20px 0;">
-        <div style="font-family:${F_MONO};font-size:11px;color:${COLORS.textHint};margin-bottom:6px;letter-spacing:.02em;">© 2026 Tecito · Buenos Aires</div>
-        <div style="font-family:${F_SANS};font-size:12px;color:${COLORS.textHint};line-height:1.5;">
-          Recibiste este mail porque reservaste un turno con un profesional que usa Tecito.
-          ¿Dudas? <a href="mailto:hola@tecito.com.ar" style="color:${COLORS.primary};text-decoration:none;">hola@tecito.com.ar</a>
-        </div>
-      </td></tr>
-    </table>
-  </td></tr>
-</table>
-</body>
-</html>`
-}
-
-function patientHtml(opts: {
-  patientFirstName: string
-  doctorFullName: string
-  dateLabel: string
-  timeLabel: string
-  durationMin: number
-  locationName?: string
-  locationAddress?: string
-  coverage?: string
-  cancelMailto: string
-}): string {
-  const detailsRow = (label: string, value: string) => `
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:14px;">
-      <tr>
-        <td valign="top" style="width:90px;">
-          <div style="font-family:${F_MONO};font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:${COLORS.textHint};padding-top:4px;">${esc(label)}</div>
-        </td>
-        <td valign="top">
-          <div style="font-family:${F_SANS};font-size:15px;color:${COLORS.text};line-height:1.5;">${value}</div>
-        </td>
-      </tr>
-    </table>`
-
-  const whenValue = `${esc(opts.dateLabel)}<br><span style="font-family:${F_MONO};font-size:13px;color:${COLORS.textMuted};">${esc(opts.timeLabel)} hs · ${opts.durationMin} min</span>`
-
-  let whereValue: string
-  if (opts.locationName || opts.locationAddress) {
-    const lines: string[] = []
-    if (opts.locationName) lines.push(`<span style="font-weight:500;">${esc(opts.locationName)}</span>`)
-    if (opts.locationAddress) lines.push(`<span style="color:${COLORS.textMuted};font-size:14px;">${esc(opts.locationAddress)}</span>`)
-    whereValue = lines.join('<br>')
-  } else {
-    whereValue = `<span style="color:${COLORS.textMuted};font-style:italic;">Consultá con tu profesional</span>`
-  }
-
-  const body = `
-    <div style="font-family:${F_MONO};font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:${COLORS.textHint};margin-bottom:14px;">Tu turno está confirmado</div>
-    <h1 style="font-family:${F_SERIF};font-size:30px;line-height:1.15;letter-spacing:-.6px;color:${COLORS.text};margin:0 0 8px 0;font-weight:400;">
-      Te esperamos el <span style="font-style:italic;color:${COLORS.primary};">${esc(opts.dateLabel.toLowerCase())}</span>.
-    </h1>
-    <p style="font-family:${F_SANS};font-size:16px;color:${COLORS.textMuted};margin:12px 0 0 0;line-height:1.6;">
-      Hola ${esc(opts.patientFirstName)}, reservaste un turno con
-      <span style="color:${COLORS.text};font-weight:500;">${esc(opts.doctorFullName)}</span>.
-      Te dejamos los detalles abajo y un archivo adjunto (.ics) para que lo agendes en tu calendario.
-    </p>
-    <div style="background:${COLORS.surface};border:1px solid ${COLORS.border};border-radius:14px;padding:22px;margin:28px 0 24px 0;">
-      ${detailsRow('Cuándo', whenValue)}
-      ${detailsRow('Dónde', whereValue)}
-      ${opts.coverage ? detailsRow('Cobertura', esc(opts.coverage)) : ''}
-    </div>
-    <p style="font-family:${F_SANS};font-size:14px;color:${COLORS.textMuted};margin:0 0 16px 0;line-height:1.55;">
-      Adjuntamos un archivo <strong style="color:${COLORS.text};">.ics</strong> — tocalo desde tu celular y se agrega a Google Calendar, Apple Calendar o Outlook en un toque, con recordatorios programados 24 h y 2 h antes.
-    </p>
-    <p style="margin:24px 0 0 0;line-height:1.5;">
-      <a href="${esc(opts.cancelMailto)}" style="color:${COLORS.textMuted};font-family:${F_SANS};font-size:13px;text-decoration:underline;">¿No vas a poder venir? Cancelar este turno</a>
-    </p>`
-
-  return shell({
-    preheader: `Tu turno con ${opts.doctorFullName} — ${opts.dateLabel} a las ${opts.timeLabel} hs`,
-    body,
-  })
-}
-
-function doctorHtml(opts: {
-  doctorFirstName: string
-  patientName: string
-  patientPhone?: string
-  patientEmail?: string
-  dateLabel: string
-  timeLabel: string
-  durationMin: number
-  locationName?: string
-  coverage?: string
-  panelUrl: string
-}): string {
-  const detailsRow = (label: string, value: string) => `
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:14px;">
-      <tr>
-        <td valign="top" style="width:90px;">
-          <div style="font-family:${F_MONO};font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:${COLORS.textHint};padding-top:4px;">${esc(label)}</div>
-        </td>
-        <td valign="top">
-          <div style="font-family:${F_SANS};font-size:15px;color:${COLORS.text};line-height:1.5;">${value}</div>
-        </td>
-      </tr>
-    </table>`
-
-  const contactLine = [opts.patientPhone, opts.patientEmail].filter(Boolean).join(' · ')
-  const patientValue = `<span style="font-weight:500;">${esc(opts.patientName)}</span>${contactLine ? `<br><span style="font-family:${F_MONO};font-size:12px;color:${COLORS.textMuted};">${esc(contactLine)}</span>` : ''}`
-  const whenValue = `${esc(opts.dateLabel)}<br><span style="font-family:${F_MONO};font-size:13px;color:${COLORS.textMuted};">${esc(opts.timeLabel)} hs · ${opts.durationMin} min</span>`
-
-  const body = `
-    <div style="font-family:${F_MONO};font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:${COLORS.textHint};margin-bottom:14px;">Nuevo turno reservado</div>
-    <h1 style="font-family:${F_SERIF};font-size:30px;line-height:1.15;letter-spacing:-.6px;color:${COLORS.text};margin:0 0 8px 0;font-weight:400;">
-      Te reservaron <span style="font-style:italic;color:${COLORS.primary};">un</span> turno.
-    </h1>
-    <p style="font-family:${F_SANS};font-size:16px;color:${COLORS.textMuted};margin:12px 0 0 0;line-height:1.6;">
-      Hola ${esc(opts.doctorFirstName)}, un paciente acaba de reservar desde tu link público. El turno ya quedó cargado en tu agenda.
-    </p>
-    <div style="background:${COLORS.surface};border:1px solid ${COLORS.border};border-radius:14px;padding:22px;margin:28px 0 24px 0;">
-      ${detailsRow('Paciente', patientValue)}
-      ${detailsRow('Cuándo', whenValue)}
-      ${opts.locationName ? detailsRow('Dónde', esc(opts.locationName)) : ''}
-      ${opts.coverage ? detailsRow('Cobertura', esc(opts.coverage)) : ''}
-    </div>
-    <p style="margin:0;">
-      <a href="${esc(opts.panelUrl)}" style="display:inline-block;background:${COLORS.primary};color:${COLORS.surface};padding:12px 22px;border-radius:10px;font-family:${F_SANS};font-size:14px;font-weight:500;text-decoration:none;letter-spacing:-.1px;">Ver en mi panel →</a>
-    </p>`
-
-  return shell({
-    preheader: `Nuevo turno: ${opts.patientName} — ${opts.dateLabel} a las ${opts.timeLabel}`,
-    body,
-  })
-}
+// ─── Handler ─────────────────────────────────────────────────────────────────
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -385,9 +261,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const timeLabel = formatTime(apt.time)
     const durationMin = parseDurationMinutes(apt.duration as unknown as string)
     const location = locationRes.data as { name: string; address: string; city: string } | null
-    const locationName = location?.name
-    const locationAddress = location ? [location.address, location.city].filter(Boolean).join(', ') : undefined
+    const locationName = location?.name || 'Consultorio'
+    const locationAddress = location ? [location.address, location.city].filter(Boolean).join(', ') : 'Consultá con tu profesional'
     const patientFirstName = (patient?.name ?? '').split(' ')[0] || 'Hola'
+    const coverage = patient?.insurance || '—'
 
     const cancelMailto = buildCancelMailto({
       doctorEmail: doctor.email,
@@ -401,15 +278,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // ============== PATIENT EMAIL ==============
     if (patient?.email) {
-      const html = patientHtml({
+      const html = renderTemplate(getPatientTemplate(), {
         patientFirstName,
         doctorFullName,
         dateLabel,
+        dateLabelLower: dateLabel.toLowerCase(),
         timeLabel,
-        durationMin,
+        durationMin: String(durationMin),
         locationName,
         locationAddress,
-        coverage: patient.insurance ?? undefined,
+        coverage,
         cancelMailto,
       })
 
@@ -419,8 +297,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         time: apt.time,
         durationMin,
         summary: `Turno con ${doctorFullName}`,
-        description: (apt.detail ?? '') + (locationAddress ? `\nDirección: ${locationAddress}` : ''),
-        location: locationAddress || locationName,
+        description: (apt.detail ?? '') + (location ? `\nDirección: ${locationAddress}` : ''),
+        location: location ? locationAddress : undefined,
         organizerName: doctorFullName,
         organizerEmail: doctor.email ?? undefined,
         withReminders: true,
@@ -446,16 +324,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // ============== DOCTOR EMAIL ==============
     if (doctor.email) {
-      const html = doctorHtml({
+      const patientContactParts = [patient?.phone, patient?.email].filter(Boolean) as string[]
+      const patientContact = patientContactParts.length > 0 ? patientContactParts.join(' · ') : 'Sin contacto'
+
+      const html = renderTemplate(getDoctorTemplate(), {
         doctorFirstName: doctor.first_name ?? '',
         patientName: patient?.name ?? 'Paciente',
-        patientPhone: patient?.phone ?? undefined,
-        patientEmail: patient?.email ?? undefined,
+        patientContact,
         dateLabel,
         timeLabel,
-        durationMin,
+        durationMin: String(durationMin),
         locationName,
-        coverage: patient?.insurance ?? undefined,
+        coverage,
         panelUrl: `${PUBLIC_SITE_URL}/?date=${apt.date}`,
       })
 
