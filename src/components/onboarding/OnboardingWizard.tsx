@@ -206,6 +206,16 @@ export default function OnboardingWizard({ firstName, lastName, onComplete }: Pr
 
         setSaving(false)
 
+        // Welcome email — fire-and-forget the moment the profile is fully set
+        // up (booking_code in hand, locations created). We deliberately don't
+        // wait for the response: an email failure shouldn't block the
+        // celebration screen. The endpoint logs failures server-side.
+        void fetch('/api/send-welcome-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profileId: user.id }),
+        }).catch((err) => console.warn('[welcome-email] notify failed', err))
+
         if (profileWithCode?.booking_code) {
           setBookingCode(profileWithCode.booking_code)
           return

@@ -303,7 +303,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const [{ data: doctor }, { data: patient }, locationRes] = await Promise.all([
-      db.from('profiles').select('first_name, last_name, email').eq('id', apt.doctor_id).single(),
+      db.from('profiles').select('first_name, last_name, email, booking_code').eq('id', apt.doctor_id).single(),
       db.from('patients').select('name, email, phone, insurance').eq('id', apt.patient_id).single(),
       apt.location_id
         ? db.from('locations').select('name, address, city').eq('id', apt.location_id).single()
@@ -324,6 +324,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const locationAddress = location ? [location.address, location.city].filter(Boolean).join(', ') : 'Consultá con tu profesional'
     const patientFirstName = (patient?.name ?? '').split(' ')[0] || 'Hola'
     const coverage = patient?.insurance || '—'
+
+    const dateCompact = apt.date.replace(/-/g, '')
+    const icsFilename = `turno-${dateCompact}.ics`
+    const viewUrl = doctor.booking_code
+      ? `${PUBLIC_SITE_URL}/p/${doctor.booking_code}`
+      : PUBLIC_SITE_URL
+    const panelUrl = `${PUBLIC_SITE_URL}/?date=${apt.date}`
+    const reschedulePath = `${panelUrl}#turno-${apt.id}`
+
+    const patientPhoneRaw = (patient?.phone ?? '').replace(/[^0-9+]/g, '')
 
     const cancelMailto = buildCancelMailto({
       doctorEmail: doctor.email,
@@ -348,6 +358,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         locationAddress,
         coverage,
         cancelMailto,
+        viewUrl,
+        icsFilename,
+        footerMessage:
+          'Reservaste un turno con un profesional que usa Tecito. Si tenés una duda médica, escribíle directamente al consultorio. Para todo lo demás, contestá este mail.',
       })
 
       const ics = buildIcs({
@@ -383,19 +397,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // ============== DOCTOR EMAIL ==============
     if (doctor.email) {
-      const patientContactParts = [patient?.phone, patient?.email].filter(Boolean) as string[]
-      const patientContact = patientContactParts.length > 0 ? patientContactParts.join(' · ') : 'Sin contacto'
-
       const html = renderTemplate(getDoctorTemplate(), {
         doctorFirstName: doctor.first_name ?? '',
         patientName: patient?.name ?? 'Paciente',
-        patientContact,
+        patientPhone: patient?.phone ?? '—',
+        patientPhoneRaw,
+        patientEmail: patient?.email ?? '',
         dateLabel,
         timeLabel,
         durationMin: String(durationMin),
         locationName,
         coverage,
-        panelUrl: `${PUBLIC_SITE_URL}/?date=${apt.date}`,
+        panelUrl,
+        reschedulePath,
+        footerMessage:
+          'Estás recibiendo esto porque usás Tecito para gestionar tu agenda. Podés silenciar las notificaciones desde tu panel o escribirnos.',
       })
 
       const { error: sendErr } = await resend().emails.send({

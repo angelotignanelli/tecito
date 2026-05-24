@@ -3,6 +3,12 @@
   "functions": {
     "api/send-booking-confirmation.ts": {
       "includeFiles": "api/_compiled-emails/**"
+    },
+    "api/send-cancellation-notification.ts": {
+      "includeFiles": "api/_compiled-emails/**"
+    },
+    "api/send-welcome-email.ts": {
+      "includeFiles": "api/_compiled-emails/**"
     }
   },
   "crons": [

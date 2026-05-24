@@ -1,87 +1,102 @@
-// Patient-facing booking confirmation.
+// Mail 01 — Patient-facing booking confirmation.
 //
-// Compiled to HTML at build time (see scripts/build-emails.mjs). Placeholders
-// wrapped in `{{ ... }}` are substituted in by the serverless function at
-// runtime. The compile step renders this template once with placeholder
-// strings as props — any conditional logic happens at runtime via the
-// substitution (no IF/ELSE comment blocks needed; every section is always
-// present with a sensible fallback string).
+// Triggers: successful booking from the doctor's public link (/p/:code).
+// Subject: "Tu turno con {{doctorFullName}} está confirmado"
+//
+// Body shape:
+//   - Eyebrow "Tu turno está confirmado"
+//   - Heading "Te esperamos el {{dateLabel}}." (date in italic sage)
+//   - Greeting + doctor name + .ics mention
+//   - Info card (Cuándo / Dónde / Cobertura)
+//   - Visual attachment card for the .ics
+//   - Dual CTAs: "Ver mi turno" + "No voy a poder ir"
 
 import * as React from 'react'
-import { Text } from '@react-email/components'
-import { Card, COLORS, DetailRow, EmailLayout, Eyebrow, FONTS, GhostLink, Heading1 } from './_layout'
+import {
+  AttachmentCard,
+  BigHour,
+  BodyText,
+  CtaRow,
+  Eyebrow,
+  Heading,
+  InfoCard,
+  InfoRow,
+  InlineLink,
+  Italic,
+  PrimaryCta,
+  SecondaryCta,
+  Strong,
+  Sub,
+  EmailLayout,
+} from './_layout'
 
-// Build script passes each prop as a literal `{{name}}` string so the
-// compiled HTML carries those tokens verbatim. The serverless function then
-// HTML-escapes each runtime value and `.replace()`s the tokens.
 export function BookingConfirmation() {
   return (
     <EmailLayout preheader="Tu turno con {{doctorFullName}} — {{dateLabel}} a las {{timeLabel}} hs">
       <Eyebrow>Tu turno está confirmado</Eyebrow>
 
-      <Heading1>
-        Te esperamos el{' '}
-        <span style={{ fontStyle: 'italic', color: COLORS.primary }}>{'{{dateLabelLower}}'}</span>.
-      </Heading1>
+      <Heading>
+        Te esperamos el<br />
+        <Italic>{'{{dateLabelLower}}'}</Italic>.
+      </Heading>
 
-      <Text
-        style={{
-          fontFamily: FONTS.sans,
-          fontSize: 16,
-          color: COLORS.textMuted,
-          margin: '12px 0 0',
-          lineHeight: 1.6,
-        }}
-      >
-        Hola {'{{patientFirstName}}'}, reservaste un turno con{' '}
-        <span style={{ color: COLORS.text, fontWeight: 500 }}>{'{{doctorFullName}}'}</span>.
-        Te dejamos los detalles abajo y un archivo adjunto (.ics) para que lo
-        agendes en tu calendario.
-      </Text>
+      <BodyText>
+        Hola <Strong>{'{{patientFirstName}}'}</Strong>, reservaste un turno con{' '}
+        <Strong>{'{{doctorFullName}}'}</Strong>. Te dejamos todo lo que necesitás
+        abajo — y un archivo{' '}
+        <code
+          style={{
+            fontFamily: '"Geist Mono", Menlo, Consolas, monospace',
+            fontSize: 13,
+            background: '#ECEFE8',
+            padding: '1px 6px',
+            borderRadius: 4,
+            color: '#3B4A38',
+          }}
+        >
+          .ics
+        </code>{' '}
+        para que lo agendes en un toque.
+      </BodyText>
 
-      <Card>
-        <DetailRow
+      <InfoCard>
+        <InfoRow
+          isFirst
           label="Cuándo"
           value={
             <>
               {'{{dateLabel}}'}
-              <br />
-              <span style={{ fontFamily: FONTS.mono, fontSize: 13, color: COLORS.textMuted }}>
-                {'{{timeLabel}}'} hs · {'{{durationMin}}'} min
-              </span>
+              <BigHour hour={'{{timeLabel}}'} duration={'{{durationMin}} min'} />
             </>
           }
         />
-        <DetailRow
+        <InfoRow
           label="Dónde"
           value={
             <>
-              <span style={{ fontWeight: 500 }}>{'{{locationName}}'}</span>
-              <br />
-              <span style={{ color: COLORS.textMuted, fontSize: 14 }}>{'{{locationAddress}}'}</span>
+              {'{{locationName}}'}
+              <Sub>{'{{locationAddress}}'}</Sub>
             </>
           }
         />
-        <DetailRow label="Cobertura" value={'{{coverage}}'} />
-      </Card>
+        <InfoRow label="Cobertura" value={'{{coverage}}'} />
+      </InfoCard>
 
-      <Text
-        style={{
-          fontFamily: FONTS.sans,
-          fontSize: 14,
-          color: COLORS.textMuted,
-          margin: '0 0 16px',
-          lineHeight: 1.55,
-        }}
-      >
-        Adjuntamos un archivo <strong style={{ color: COLORS.text }}>.ics</strong>{' '}
-        — tocalo desde tu celular y se agrega a Google Calendar, Apple Calendar
-        o Outlook en un toque, con recordatorios programados 24 h y 2 h antes.
-      </Text>
+      <AttachmentCard
+        filename={'{{icsFilename}}'}
+        meta="Recordatorios 24 h y 2 h antes"
+      />
 
-      <Text style={{ margin: '24px 0 0', lineHeight: 1.5 }}>
-        <GhostLink href="{{cancelMailto}}">¿No vas a poder venir? Cancelar este turno</GhostLink>
-      </Text>
+      <CtaRow>
+        <PrimaryCta href={'{{viewUrl}}'}>Ver mi turno</PrimaryCta>
+        <SecondaryCta href={'{{cancelMailto}}'}>No voy a poder ir</SecondaryCta>
+      </CtaRow>
+
+      {/* The footer message is injected via {{footerMessage}} in _layout. The
+          serverless function passes a context-specific string for each template. */}
+      <span style={{ display: 'none' }}>
+        <InlineLink href="mailto:hola@tecito.com.ar">hola@tecito.com.ar</InlineLink>
+      </span>
     </EmailLayout>
   )
 }

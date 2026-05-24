@@ -18,7 +18,9 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import BookingConfirmation from '../emails/BookingConfirmation'
+import CancellationNotification from '../emails/CancellationNotification'
 import NewBookingNotification from '../emails/NewBookingNotification'
+import Welcome from '../emails/Welcome'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_DIR = join(__dirname, '..', 'api', '_compiled-emails')
@@ -32,6 +34,8 @@ interface Template {
 const TEMPLATES: Template[] = [
   { name: 'booking-confirmation', component: BookingConfirmation },
   { name: 'new-booking-notification', component: NewBookingNotification },
+  { name: 'cancellation-notification', component: CancellationNotification },
+  { name: 'welcome', component: Welcome },
 ]
 
 async function main() {

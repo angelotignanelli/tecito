@@ -1,64 +1,79 @@
-// Doctor-facing notification when a patient books through their public link.
+// Mail 02 — Doctor-facing notification.
 //
-// Shorter than the patient confirmation — the doctor just needs the
-// essentials and a button into their panel to confirm/reschedule.
+// Triggers: a patient just booked from the doctor's public link.
+// Subject: "Nuevo turno: {{patientName}} · {{dateLabel}}"
+//
+// Body shape:
+//   - Eyebrow "Nuevo turno reservado"
+//   - Heading "Te reservaron un turno." (italic accent)
+//   - Greeting + patient context
+//   - Info card (Paciente / Cuándo / Dónde / Cobertura)
+//   - Dual CTAs: "Ver en mi panel →" + "Reagendar"
 
 import * as React from 'react'
-import { Text } from '@react-email/components'
-import { Card, COLORS, DetailRow, EmailLayout, Eyebrow, FONTS, Heading1, PrimaryButton } from './_layout'
+import {
+  BigHour,
+  BodyText,
+  CtaRow,
+  Eyebrow,
+  EmailLayout,
+  Heading,
+  InfoCard,
+  InfoRow,
+  InlineLink,
+  Italic,
+  PrimaryCta,
+  SecondaryCta,
+  Strong,
+  Sub,
+} from './_layout'
 
 export function NewBookingNotification() {
   return (
     <EmailLayout preheader="Nuevo turno: {{patientName}} — {{dateLabel}} a las {{timeLabel}}">
       <Eyebrow>Nuevo turno reservado</Eyebrow>
 
-      <Heading1>
-        Te reservaron <span style={{ fontStyle: 'italic', color: COLORS.primary }}>un</span> turno.
-      </Heading1>
+      <Heading>
+        Te reservaron<br />
+        <Italic>un turno</Italic>.
+      </Heading>
 
-      <Text
-        style={{
-          fontFamily: FONTS.sans,
-          fontSize: 16,
-          color: COLORS.textMuted,
-          margin: '12px 0 0',
-          lineHeight: 1.6,
-        }}
-      >
-        Hola {'{{doctorFirstName}}'}, un paciente acaba de reservar desde tu link
-        público. El turno ya quedó cargado en tu agenda.
-      </Text>
+      <BodyText>
+        Hola <Strong>{'{{doctorFirstName}}'}</Strong>, un paciente acaba de
+        reservar desde tu link público. Ya quedó cargado en tu agenda.
+      </BodyText>
 
-      <Card>
-        <DetailRow
+      <InfoCard>
+        <InfoRow
+          isFirst
           label="Paciente"
           value={
             <>
-              <span style={{ fontWeight: 500 }}>{'{{patientName}}'}</span>
-              <br />
-              <span style={{ fontFamily: FONTS.mono, fontSize: 12, color: COLORS.textMuted }}>
-                {'{{patientContact}}'}
-              </span>
+              {'{{patientName}}'}
+              <Sub>
+                <InlineLink href={'tel:{{patientPhoneRaw}}'}>{'{{patientPhone}}'}</InlineLink>{' '}
+                · <InlineLink href={'mailto:{{patientEmail}}'}>{'{{patientEmail}}'}</InlineLink>
+              </Sub>
             </>
           }
         />
-        <DetailRow
+        <InfoRow
           label="Cuándo"
           value={
             <>
               {'{{dateLabel}}'}
-              <br />
-              <span style={{ fontFamily: FONTS.mono, fontSize: 13, color: COLORS.textMuted }}>
-                {'{{timeLabel}}'} hs · {'{{durationMin}}'} min
-              </span>
+              <BigHour hour={'{{timeLabel}}'} duration={'{{durationMin}} min'} />
             </>
           }
         />
-        <DetailRow label="Dónde" value={'{{locationName}}'} />
-        <DetailRow label="Cobertura" value={'{{coverage}}'} />
-      </Card>
+        <InfoRow label="Dónde" value={'{{locationName}}'} />
+        <InfoRow label="Cobertura" value={'{{coverage}}'} />
+      </InfoCard>
 
-      <PrimaryButton href="{{panelUrl}}">Ver en mi panel →</PrimaryButton>
+      <CtaRow>
+        <PrimaryCta href={'{{panelUrl}}'}>Ver en mi panel →</PrimaryCta>
+        <SecondaryCta href={'{{reschedulePath}}'}>Reagendar</SecondaryCta>
+      </CtaRow>
     </EmailLayout>
   )
 }
