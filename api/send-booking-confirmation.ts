@@ -100,6 +100,12 @@ const SUPABASE_URL = (process.env.SUPABASE_URL ?? '').trim()
 const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim()
 const RESEND_API_KEY = (process.env.RESEND_API_KEY ?? '').trim()
 const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL ?? 'https://tecito.com.ar').trim()
+// Optional shared secret used to authenticate the Supabase DB Webhook. When
+// the env var is set, every request must carry the same value in the
+// `x-webhook-secret` header or it gets 401. Leaving it unset disables the
+// check, which is useful during the migration window where the legacy
+// client-side fetch (no header) is still firing.
+const BOOKING_WEBHOOK_SECRET = (process.env.BOOKING_WEBHOOK_SECRET ?? '').trim()
 
 // Resend verified the root domain — DKIM lives at resend._domainkey.tecito.com.ar
 // and the API key is scoped to tecito.com.ar. Keep the visible From on the root
@@ -217,6 +223,37 @@ function buildCancelMailto(args: {
   return `mailto:${to}?subject=${subject}&body=${body}`
 }
 
+// ─── Request normalization ───────────────────────────────────────────────────
+
+/**
+ * Accepts both invocation shapes:
+ *  - Legacy client fetch: `{ "appointmentId": "uuid" }`
+ *  - Supabase DB Webhook: `{ "type": "INSERT", "table": "appointments",
+ *                            "record": { "id": "uuid", ... }, ... }`
+ *
+ * Returns null when the payload is for a different table/event (we still
+ * respond 200 in that case — webhooks shouldn't be punished for over-firing).
+ */
+function extractAppointmentId(body: unknown): { id: string | null; ignored: boolean } {
+  if (!body || typeof body !== 'object') return { id: null, ignored: false }
+  const b = body as Record<string, unknown>
+
+  // Supabase webhook payload — { type, table, record }.
+  if (typeof b.type === 'string' && typeof b.table === 'string') {
+    if (b.table !== 'appointments' || b.type !== 'INSERT') {
+      return { id: null, ignored: true }
+    }
+    const record = b.record as { id?: unknown } | undefined
+    if (record && typeof record.id === 'string') return { id: record.id, ignored: false }
+    return { id: null, ignored: false }
+  }
+
+  // Legacy client payload — { appointmentId }.
+  if (typeof b.appointmentId === 'string') return { id: b.appointmentId, ignored: false }
+
+  return { id: null, ignored: false }
+}
+
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -224,8 +261,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method Not Allowed' })
   }
 
-  const { appointmentId } = (req.body ?? {}) as { appointmentId?: string }
-  if (!appointmentId || typeof appointmentId !== 'string') {
+  // Optional shared-secret check. Only enforced when the env var is set, so
+  // the migration window (where the client-side fetch is still firing
+  // without the header) keeps working.
+  if (BOOKING_WEBHOOK_SECRET) {
+    const provided = req.headers['x-webhook-secret']
+    const ok = typeof provided === 'string' && provided === BOOKING_WEBHOOK_SECRET
+    if (!ok) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+  }
+
+  const { id: appointmentId, ignored } = extractAppointmentId(req.body)
+  if (ignored) {
+    // Webhook fired for an unrelated event — quietly ack so Supabase doesn't
+    // retry. Don't log because this can happen many times per day.
+    return res.status(200).json({ ignored: true })
+  }
+  if (!appointmentId) {
     return res.status(400).json({ error: 'appointmentId is required' })
   }
 
@@ -234,13 +287,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: apt, error: aptErr } = await db
       .from('appointments')
-      .select('id, doctor_id, patient_id, location_id, date, time, duration, detail, status')
+      .select('id, doctor_id, patient_id, location_id, date, time, duration, detail, status, email_sent_at')
       .eq('id', appointmentId)
       .single()
 
     if (aptErr || !apt) {
       console.error('[send-booking] appointment not found', appointmentId, aptErr)
       return res.status(404).json({ error: 'Appointment not found' })
+    }
+
+    // Idempotency check — if the emails already went out for this turno, do
+    // nothing. Lets the DB webhook fire safely even if the client also fired.
+    if (apt.email_sent_at) {
+      return res.status(200).json({ alreadySent: true })
     }
 
     const [{ data: doctor }, { data: patient }, locationRes] = await Promise.all([
@@ -351,6 +410,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.error('[send-booking] doctor send failed', sendErr)
       } else {
         result.sentToDoctor = true
+      }
+    }
+
+    // Mark the appointment as "emails sent" as soon as at least one of the
+    // two mails actually went out. If only the doctor or only the patient
+    // landed (e.g. one had no email on file), we still flip the flag so a
+    // retried webhook doesn't re-send the one that succeeded. If both failed,
+    // we leave it null so the next trigger can retry.
+    if (result.sentToPatient || result.sentToDoctor) {
+      const { error: updateErr } = await db
+        .from('appointments')
+        .update({ email_sent_at: new Date().toISOString() })
+        .eq('id', appointmentId)
+      if (updateErr) {
+        console.error('[send-booking] failed to stamp email_sent_at', updateErr)
+        // Don't fail the request — the mails already went out, the flag is
+        // only an optimization for the idempotency check. Worst case the
+        // next webhook fires and re-sends; we'd rather be at-least-once than
+        // skip the user-visible work entirely.
       }
     }
 
