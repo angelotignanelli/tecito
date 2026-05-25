@@ -216,15 +216,49 @@ async function handlePayment(paymentId: string) {
     userId = data?.id ?? null
   }
 
-  if (pay.status === 'approved' && userId) {
-    const nextMonth = new Date()
-    nextMonth.setMonth(nextMonth.getMonth() + 1)
-    await admin()
+  // Pull the current state so we can decide whether to apply the payment.
+  // The bug we're fixing: a payment.approved arriving AFTER the user
+  // already cancelled the preapproval (an in-flight charge that MP didn't
+  // dequeue in time) was unconditionally setting plan_status='active' and
+  // moving plan_valid_until forward a month — silently un-cancelling the
+  // subscription. We refuse to overwrite a terminal state from a payment
+  // webhook; only the preapproval webhook (and the cron) drive lifecycle.
+  let currentStatus: string | null = null
+  if (userId) {
+    const { data } = await admin()
       .from('profiles')
-      .update({ plan_valid_until: nextMonth.toISOString(), plan_status: 'active' })
+      .select('plan_status')
       .eq('id', userId)
+      .maybeSingle()
+    currentStatus = (data?.plan_status as string | null) ?? null
+  }
+
+  const TERMINAL = new Set(['cancelled', 'past_due', 'expired'])
+
+  if (pay.status === 'approved' && userId) {
+    if (currentStatus && TERMINAL.has(currentStatus)) {
+      // Charge arrived after cancellation. Don't touch the profile — the
+      // user is owed a refund or this is a duplicate MP charge. Log loudly
+      // so we notice the case in support / metrics.
+      console.warn(
+        '[mp-webhook] payment.approved on terminal subscription — not re-activating',
+        { userId, currentStatus, paymentId: pay.id },
+      )
+    } else {
+      const nextMonth = new Date()
+      nextMonth.setMonth(nextMonth.getMonth() + 1)
+      await admin()
+        .from('profiles')
+        .update({ plan_valid_until: nextMonth.toISOString(), plan_status: 'active' })
+        .eq('id', userId)
+    }
   } else if ((pay.status === 'rejected' || pay.status === 'refunded') && userId) {
-    await admin().from('profiles').update({ plan_status: 'past_due' }).eq('id', userId)
+    // Only demote to past_due if the sub is still active — if it was
+    // already cancelled the cron will downgrade it to free at expiry,
+    // overwriting it here would lose the explicit cancellation signal.
+    if (!currentStatus || !TERMINAL.has(currentStatus)) {
+      await admin().from('profiles').update({ plan_status: 'past_due' }).eq('id', userId)
+    }
   }
 
   await admin().from('billing_events').insert({
