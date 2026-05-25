@@ -186,18 +186,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'No pudimos cancelar el turno. Probá de nuevo.' })
     }
 
-    // Fire-and-forget notification to the doctor. We don't await blocking —
-    // the user already saw the cancellation succeed. Failures land in the
-    // function logs.
-    void fetch(`${PUBLIC_SITE_URL}/api/send-cancellation-notification`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        appointmentId: apt.id,
-        cancellationReason: reason ?? '',
-        cancelledAt: new Date().toISOString(),
-      }),
-    }).catch((err) => console.warn('[cancel-booking] notify dispatch failed', err))
+    // Notify the doctor by mail. We tried fire-and-forget first (void fetch
+    // + .catch) and the email never landed: in Vercel serverless, once the
+    // handler resolves its response the container is frozen — any promise
+    // not yet settled is killed. Awaiting blocks the user for ~1-2s but
+    // guarantees the side effect actually happens. The user already paid
+    // for the latency by clicking "cancelar", a couple seconds for the
+    // mail-out is acceptable.
+    try {
+      const notifyResp = await fetch(`${PUBLIC_SITE_URL}/api/send-cancellation-notification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appointmentId: apt.id,
+          cancellationReason: reason ?? '',
+          cancelledAt: new Date().toISOString(),
+        }),
+      })
+      if (!notifyResp.ok) {
+        const text = await notifyResp.text().catch(() => '')
+        console.warn('[cancel-booking] notify non-2xx', notifyResp.status, text.slice(0, 200))
+      }
+    } catch (err) {
+      console.warn('[cancel-booking] notify dispatch failed', err)
+    }
 
     return res.status(200).json({ ok: true })
   } catch (err) {
