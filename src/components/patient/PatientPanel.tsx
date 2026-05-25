@@ -48,7 +48,7 @@ export default function PatientPanel({ appointment, dayAppointments, dayLabel, s
           <div className="p-6">
             <Eyebrow>Horario libre</Eyebrow>
             <p className="text-[13px] text-text-muted mt-3 leading-[1.55]">
-              Este horario está disponible para reservas desde el bot de WhatsApp.
+              Este horario está disponible para que tus pacientes reserven desde tu link público.
             </p>
             <Btn className="mt-4 w-full justify-center" style={{ width: '100%' }}>
               <Icon name="block" size={13} /> Bloquear horario

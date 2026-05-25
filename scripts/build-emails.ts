@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url'
 import BookingConfirmation from '../emails/BookingConfirmation'
 import CancellationNotification from '../emails/CancellationNotification'
 import NewBookingNotification from '../emails/NewBookingNotification'
+import Reminder24h from '../emails/Reminder24h'
 import Welcome from '../emails/Welcome'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -35,6 +36,7 @@ const TEMPLATES: Template[] = [
   { name: 'booking-confirmation', component: BookingConfirmation },
   { name: 'new-booking-notification', component: NewBookingNotification },
   { name: 'cancellation-notification', component: CancellationNotification },
+  { name: 'reminder-24h', component: Reminder24h },
   { name: 'welcome', component: Welcome },
 ]
 

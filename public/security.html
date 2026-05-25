@@ -79,12 +79,20 @@
     con audit log de qué se vio y cuándo.
   </p>
 
-  <h2>WhatsApp y comunicaciones</h2>
+  <h2>Comunicaciones por mail</h2>
   <p>
-    Los mensajes con tus pacientes pasan por la API oficial de
-    <strong>WhatsApp Business (Meta)</strong>. Tecito envía los mensajes en tu nombre
-    pero no los almacena fuera de lo necesario para mostrar el historial en tu panel.
-    Meta tiene sus propias políticas de privacidad para los mensajes en tránsito.
+    Las confirmaciones, recordatorios y avisos de cancelación a tus pacientes salen
+    por correo electrónico usando <strong>Resend</strong> desde el dominio
+    <code>send.tecito.com.ar</code> — con SPF, DKIM y DMARC configurados. Solo
+    almacenamos los timestamps del envío para evitar enviar dos veces el mismo mail.
+    El contenido del mensaje no se guarda como historial — si necesitás repetir un
+    mail, lo regeneramos desde el turno.
+  </p>
+  <p>
+    Cuando vos abrís un WhatsApp con un paciente desde el panel, eso usa tu propio
+    WhatsApp (a través de un link <code>wa.me/</code>) — el mensaje sale desde tu
+    celular o WhatsApp Web, no por Tecito. Esos mensajes nunca pasan por nuestros
+    servidores.
   </p>
 
   <h2>Buenas prácticas de tu lado</h2>

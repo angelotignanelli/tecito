@@ -41,7 +41,7 @@ export const PLANS: Record<PlanId, Plan> = {
       'Hasta 10 pacientes',
       'Agenda web completa',
       'Link público de reservas',
-      'Recordatorios manuales por WhatsApp',
+      'Confirmaciones por mail con calendario',
       '1 profesional',
       'Soporte por email',
     ],

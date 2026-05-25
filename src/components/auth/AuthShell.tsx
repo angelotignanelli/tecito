@@ -42,7 +42,7 @@ export default function AuthShell({ children }: { children: ReactNode }) {
             El consultorio se administra <span className="italic">solo.</span>
           </div>
           <div className="text-[14px] opacity-75 mt-7 md:mt-8 leading-[1.6] max-w-[380px]">
-            Turnos por WhatsApp, historia clínica, recordatorios y estadísticas en un solo lugar.
+            Tus pacientes reservan desde un link, vos atendés. Historia clínica, recordatorios por mail y estadísticas — todo en un solo lugar.
           </div>
 
           <div className="mt-10 md:mt-12 pt-5 border-t border-white/15 max-w-[400px]">

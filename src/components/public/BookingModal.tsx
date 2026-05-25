@@ -139,9 +139,10 @@ export default function BookingModal({ doctor, slot, location, onClose, onSucces
               Listo
             </button>
             <div className="text-center text-[11px] text-text-hint mt-4 leading-[1.55]">
-              Te llega la confirmación por WhatsApp al <strong className="text-text">{phone}</strong>.
+              Te llega la confirmación por mail a <strong className="text-text">{email}</strong>
+              {' '}con un archivo de calendario para que no te olvides.
               <br />
-              Avisamos 24 hs antes.
+              Te avisamos también el día anterior.
             </div>
           </div>
         </div>
@@ -211,7 +212,7 @@ export default function BookingModal({ doctor, slot, location, onClose, onSucces
           </div>
 
           <Field label="DNI" value={dni} onChange={setDni} placeholder="32.481.204" inputMode="numeric" />
-          <Field label="WhatsApp" value={phone} onChange={setPhone} placeholder="+54 9 11 5555-0001" type="tel" helper="Te enviamos la confirmación por acá." />
+          <Field label="WhatsApp" value={phone} onChange={setPhone} placeholder="+54 9 11 5555-0001" type="tel" helper="Por si el profesional necesita contactarte." />
           <Field label="Email" value={email} onChange={setEmail} placeholder="tu@email.com" type="email" />
 
           {/* Insurance chips */}

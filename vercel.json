@@ -9,12 +9,19 @@
     },
     "api/send-welcome-email.ts": {
       "includeFiles": "api/_compiled-emails/**"
+    },
+    "api/cron/send-reminders.ts": {
+      "includeFiles": "api/_compiled-emails/**"
     }
   },
   "crons": [
     {
       "path": "/api/cron-expire-plans",
       "schedule": "15 3 * * *"
+    },
+    {
+      "path": "/api/cron/send-reminders",
+      "schedule": "0 11 * * *"
     }
   ],
   "redirects": [

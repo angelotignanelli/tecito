@@ -413,13 +413,13 @@ function HowItWorks() {
           <Step num="02" tag="Compartir link" title="Tus pacientes reservan solos" body="Eligen día, horario y profesional desde el navegador. Sin instalar nada, sin crear cuentas, en menos de un minuto.">
             <MiniCalendar />
           </Step>
-          <Step num="03" tag="Atender" title="Vos atendés, Tecito recuerda" body="Recordatorios automáticos por WhatsApp, confirmaciones, reagendamientos. Tu agenda siempre actualizada.">
+          <Step num="03" tag="Atender" title="Vos atendés, Tecito recuerda" body="Confirmación instantánea por mail con archivo de calendario. Recordatorios y agenda siempre actualizada — sin tener que avisar a cada paciente a mano.">
             <div
               className="px-4 py-3.5 text-primary"
               style={{ background: 'var(--color-primary-light)', border: '1px solid var(--color-primary-mid)', borderRadius: 14, fontSize: 12, lineHeight: 1.5, maxWidth: 200 }}
             >
               <div className="text-text-hint mb-1 uppercase" style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.06em' }}>JUE · 10:30</div>
-              <div>María Fernández confirmó su turno de mañana</div>
+              <div>Le llegó la confirmación por mail a María Fernández</div>
             </div>
           </Step>
         </div>
@@ -475,9 +475,9 @@ function Features() {
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 9h18M8 3v4M16 3v4" /></svg>,
     },
     {
-      title: 'Recordatorios por WhatsApp',
-      body: 'El paciente recibe confirmación, recordatorio el día anterior y aviso 1 hora antes. Bajan los ausentismos un 60%.',
-      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10 21a2 2 0 0 0 4 0" /></svg>,
+      title: 'Confirmación por mail con calendario',
+      body: 'Cada paciente recibe un mail con la confirmación y un archivo .ics que carga el turno en su Google Calendar o iPhone — con recordatorios automáticos antes del turno.',
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M4 6h16v14H4z" /><path d="M4 10h16M9 3v6M15 3v6" /></svg>,
     },
     {
       title: 'Obras sociales y particulares',
@@ -561,7 +561,7 @@ function PatientMockup() {
             <div className="mt-7">
               <MockupItem num="01" title="Tu link, tu marca" body="tu-consultorio.tecito.com.ar — con tu logo, tus colores, tu información profesional." first />
               <MockupItem num="02" title="Calendario en vivo" body="Solo ven los horarios reales que tenés disponibles. Si reservás un turno desde tu panel, desaparece de la web al instante." />
-              <MockupItem num="03" title="Confirmación inmediata" body="Reciben WhatsApp con la dirección, hora y un link para cancelar o reagendar si necesitan." />
+              <MockupItem num="03" title="Confirmación inmediata" body="Reciben un mail con la dirección, hora, archivo de calendario y un link para cancelar si no van a poder venir." />
             </div>
           </div>
 
@@ -710,7 +710,7 @@ function Testimonials() {
       initials: 'MT', name: 'Mariano Tort', role: 'DIRECTOR · CENTRO PUEYRREDÓN',
     },
     {
-      text: 'Bajé los pacientes que no se presentaban casi a la mitad. Los recordatorios automáticos hacen una diferencia enorme.',
+      text: 'Bajé los pacientes que no se presentaban casi a la mitad. La confirmación por mail con el archivo de calendario hace que no se olviden.',
       initials: 'LR', name: 'Lic. Lucía Rodríguez', role: 'PSICOLOGÍA · ROSARIO',
     },
   ]
@@ -784,7 +784,7 @@ function Pricing({ onGoToRegister }: { onGoToRegister: () => void }) {
               'Hasta 10 pacientes',
               'Agenda web completa',
               'Link público de reservas',
-              'Recordatorios manuales por WhatsApp',
+              'Confirmaciones por mail con calendario',
               '1 profesional',
               'Soporte por email',
             ]}
@@ -932,7 +932,7 @@ function Plan({
 function Faq() {
   const items = [
     { q: '¿Necesito instalar algo?', a: 'No. Tecito funciona desde cualquier navegador — computadora, tablet o celular. Tus pacientes tampoco descargan nada: solo abren el link que les pasás.' },
-    { q: '¿Cómo funcionan los recordatorios por WhatsApp?', a: 'Usamos la API oficial de WhatsApp Business. Cuando un paciente reserva, recibe la confirmación al instante; el día anterior, un recordatorio; y 1 hora antes, otro aviso para que confirme o cancele.' },
+    { q: '¿Cómo se entera el paciente de su turno?', a: 'Apenas reserva, recibe un mail con la confirmación, la dirección del consultorio y un archivo de calendario (.ics) que carga el turno en su Google Calendar o iPhone con recordatorios automáticos. También le mandamos un recordatorio por mail el día anterior. Si no va a poder venir, tiene un link en el mismo mail para cancelar — y a vos te llega el aviso al instante.' },
     { q: '¿Puedo manejar varios profesionales en una misma agenda?', a: 'Sí. En el plan Consultorio podés tener hasta 5 profesionales, cada uno con sus horarios, servicios y obras sociales. Tu secretaría ve todas las agendas en una sola vista.' },
     { q: '¿Mis pacientes ven los horarios de los otros pacientes?', a: 'Nunca. Solo ven los horarios libres. Los datos de los pacientes existentes son privados y solo accesibles desde tu panel.' },
     { q: '¿Qué pasa si cancelo?', a: 'Cancelás cuando quieras desde tu panel — sin llamadas, sin esperas. Tus datos quedan disponibles para descargar durante 90 días.' },
