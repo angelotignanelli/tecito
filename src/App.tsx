@@ -373,6 +373,45 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     })
   }, [])
 
+  // Deep-link from transactional emails: /?turno=<uuid> opens the detail
+  // panel for that appointment directly. Used by the "Reagendar" CTA in the
+  // doctor's new-booking notification. We do a tiny query for the row's
+  // date so the agenda lands on the right day before the modal pops.
+  //
+  // Caveat: if the doctor isn't logged in when they click the link, our
+  // auth flow strips the search string after login and the deep link is
+  // lost. That edge case is acceptable for now — the common path is they
+  // already have a session in their browser. Future work: stash the
+  // ?turno in localStorage during login redirect, like pending_invite.
+  useEffect(() => {
+    if (!userId) return
+    const params = new URLSearchParams(window.location.search)
+    const turnoId = params.get('turno')
+    if (!turnoId) return
+
+    let stale = false
+    void (async () => {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('date')
+        .eq('id', turnoId)
+        .eq('doctor_id', userId)
+        .single()
+      if (stale) return
+      if (error || !data?.date) {
+        // Probably an old / foreign id — surface nothing, just clean the URL.
+        window.history.replaceState({}, '', window.location.pathname)
+        return
+      }
+      setSelectedDate(data.date)
+      setSelectedId(turnoId)
+      window.history.replaceState({}, '', window.location.pathname)
+    })()
+    return () => {
+      stale = true
+    }
+  }, [userId])
+
   // Make the Plans modal back-button-aware. When the user opens Plans,
   // we push a no-op history entry so a browser back press can dismiss
   // the modal — matching what the X button does. Without this, "back"

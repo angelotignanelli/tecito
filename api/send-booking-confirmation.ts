@@ -350,8 +350,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // the real attachment at the bottom of the message — we no longer show
     // a mock card for it inside the body.
     const icsFilename = `turno-${dateCompact}.ics`
+    // Top-level panel link (used when we just want the doctor to land on
+    // their agenda on the right day).
     const panelUrl = `${PUBLIC_SITE_URL}/?date=${apt.date}`
-    const reschedulePath = `${panelUrl}#turno-${apt.id}`
+    // Deep-link directly into this appointment's detail panel. The Dashboard
+    // component picks up the ?turno param on mount and pops open the modal.
+    const turnoUrl = `${PUBLIC_SITE_URL}/?turno=${apt.id}`
 
     const patientPhoneRaw = (patient?.phone ?? '').replace(/[^0-9+]/g, '')
 
@@ -428,7 +432,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         locationName,
         coverage,
         panelUrl,
-        reschedulePath,
+        // "Reagendar" sends the doctor straight to the appointment detail
+        // where they can edit / move it. The Dashboard reads ?turno on mount.
+        reschedulePath: turnoUrl,
         footerMessage:
           'Estás recibiendo esto porque usás Tecito para gestionar tu agenda. Podés silenciar las notificaciones desde tu panel o escribirnos.',
       })
