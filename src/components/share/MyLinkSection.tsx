@@ -2,10 +2,14 @@ import { useState } from 'react'
 import { getPublicBaseUrl } from '../../lib/publicUrl'
 import Icon from '../Icon'
 import PageHeader from '../PageHeader'
+import EditableBookingUrl from './EditableBookingUrl'
 
 interface Props {
+  userId: string
   bookingCode: string
+  bookingSlug: string | null
   doctorFirstName?: string
+  onSlugUpdated: (newSlug: string) => void
 }
 
 /**
@@ -19,8 +23,18 @@ interface Props {
  * pointer-driven UI where the user wants quick share without leaving
  * their current view.
  */
-export default function MyLinkSection({ bookingCode, doctorFirstName }: Props) {
-  const url = `${getPublicBaseUrl()}/p/${bookingCode}`
+export default function MyLinkSection({
+  userId,
+  bookingCode,
+  bookingSlug,
+  doctorFirstName,
+  onSlugUpdated,
+}: Props) {
+  // Slug wins over code for share copy — that's the whole point of the
+  // personal handle. We still keep the random code as fallback for
+  // brand-new accounts where the slug couldn't be derived yet.
+  const handle = bookingSlug || bookingCode
+  const url = `${getPublicBaseUrl()}/p/${handle}`
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -57,7 +71,7 @@ export default function MyLinkSection({ bookingCode, doctorFirstName }: Props) {
           subtitle="Compartilo con pacientes para que reserven turnos sin registrarse."
         />
 
-        {/* URL block */}
+        {/* URL block — editable handle (slug or legacy hex code) */}
         <div className="mb-6">
           <div
             className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-2"
@@ -65,21 +79,13 @@ export default function MyLinkSection({ bookingCode, doctorFirstName }: Props) {
           >
             URL pública
           </div>
-          <div className="border border-gray-border bg-surface rounded-[12px] p-1 pl-3.5 flex items-center gap-2">
-            <span
-              className="flex-1 text-[12px] truncate min-w-0"
-              style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}
-              title={url}
-            >
-              {url}
-            </span>
-            <button
-              onClick={handleCopy}
-              className="px-3 py-2 rounded-[8px] text-[12px] font-medium cursor-pointer border border-primary bg-primary text-surface hover:bg-[#2F3C2D] transition-colors shrink-0"
-            >
-              {copied ? '¡Copiado!' : 'Copiar'}
-            </button>
-          </div>
+          <EditableBookingUrl
+            userId={userId}
+            bookingCode={bookingCode}
+            bookingSlug={bookingSlug}
+            variant="section"
+            onSlugUpdated={onSlugUpdated}
+          />
         </div>
 
         {/* Direct share */}

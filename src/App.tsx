@@ -61,8 +61,13 @@ export default function App() {
   useEffect(() => {
     const pathname = window.location.pathname
 
-    // Detect public booking URL: /p/:code
-    const pathMatch = pathname.match(/^\/p\/([a-f0-9]{8})\/?$/)
+    // Detect public booking URL: /p/:codeOrSlug
+    // Accepts either the legacy 8-char hex booking_code (`7c2b7d05`) OR
+    // the human booking_slug (`angelo-tignanelli`). Mirrors the
+    // server-side CHECK constraint: 3-40 chars, lowercase alphanumerics
+    // and dashes, no leading/trailing dash. The resolver in
+    // publicBooking.ts queries both columns so either form resolves.
+    const pathMatch = pathname.match(/^\/p\/([a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?)\/?$/)
     if (pathMatch) {
       setPublicBookingCode(pathMatch[1])
       setAuthScreen('public-booking')
@@ -432,7 +437,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   }, [showPlans, paywall])
 
   // Supabase data hooks
-  const { profile } = useProfile(userId)
+  const { profile, refetch: refetchProfile } = useProfile(userId)
   const { organizations, memberships, create: createOrg } = useOrganizations(userId)
   const { patients: supaPatients, patientRows: supaPatientRows, loading: patientsLoading, add: addPatient, remove: removePatient } = usePatients(userId)
   const { appointments: supaAppointments, loading: apptsLoading, updateStatus: updateApptStatus, add: addAppointment } = useAppointments(userId)
@@ -864,7 +869,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             onBlockHours={handleBlockHours}
             onRecordarTodos={handleRecordarTodos}
             onScheduleAppointment={handleScheduleFromPatient}
-            bookingCode={profile?.booking_code ?? null}
+            // Prefer the human slug (`angelo-tignanelli`); fall back to
+            // the random hex code so the "empty day → comparti tu link"
+            // card still works on brand-new accounts where the slug
+            // couldn't be derived (no name set yet).
+            bookingCode={profile?.booking_slug ?? profile?.booking_code ?? null}
           />
 
           {/* Mobile-only FAB for "+ Nuevo turno". Sits above the
@@ -975,10 +984,16 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
       {/* Mobile-only "Mi link" view. Desktop reaches the same content
           via the MyLinkModal triggered from the sidebar. */}
-      {activeView === 'mi-link' && profile?.booking_code && (
+      {activeView === 'mi-link' && userId && profile?.booking_code && (
         <MyLinkSection
+          userId={userId}
           bookingCode={profile.booking_code}
+          bookingSlug={profile.booking_slug ?? null}
           doctorFirstName={profile?.first_name ?? undefined}
+          // The slug was already persisted by EditableBookingUrl — we
+          // just need to refetch the profile so the URL row + email
+          // template variables see the new value.
+          onSlugUpdated={() => { void refetchProfile() }}
         />
       )}
 
@@ -1003,11 +1018,14 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </div>
       )}
 
-      {showMyLink && profile?.booking_code && (
+      {showMyLink && userId && profile?.booking_code && (
         <MyLinkModal
+          userId={userId}
           bookingCode={profile.booking_code}
+          bookingSlug={profile.booking_slug ?? null}
           doctorFirstName={profile?.first_name}
           onClose={() => setShowMyLink(false)}
+          onSlugUpdated={() => { void refetchProfile() }}
         />
       )}
 

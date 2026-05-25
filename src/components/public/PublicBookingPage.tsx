@@ -237,7 +237,7 @@ export default function PublicBookingPage({ bookingCode }: Props) {
               className="hidden sm:block text-[11px] text-text-hint"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              tecito.com.ar/{doctor.last_name?.toLowerCase().replace(/\s+/g, '-') || bookingCode}
+              tecito.com.ar/p/{doctor.booking_slug || bookingCode}
             </div>
           </div>
           <div

@@ -93,7 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: profile, error } = await db
       .from('profiles')
-      .select('first_name, email, booking_code')
+      .select('first_name, email, booking_code, booking_slug')
       .eq('id', profileId)
       .single()
     if (error || !profile?.email) {
@@ -101,9 +101,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'Profile or email missing' })
     }
 
-    const publicLink = profile.booking_code
-      ? `tecito.com.ar/p/${profile.booking_code}`
-      : 'tecito.com.ar/p/[código]'
+    // Prefer the human slug (`angelo-tignanelli`) over the random hex
+    // code (`7c2b7d05`) — the welcome mail is the doctor's first
+    // exposure to their share link, leading with the readable form
+    // makes it actually feel personal.
+    const handle = profile.booking_slug ?? profile.booking_code ?? null
+    const publicLink = handle ? `tecito.com.ar/p/${handle}` : 'tecito.com.ar/p/[código]'
 
     const html = renderTemplate(getTemplate(), {
       doctorFirstName: profile.first_name ?? '',

@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import { getPublicBaseUrl } from '../../lib/publicUrl'
 import Icon from '../Icon'
+import EditableBookingUrl from './EditableBookingUrl'
 
 interface Props {
+  userId: string
   bookingCode: string
+  bookingSlug: string | null
   doctorFirstName?: string
   onClose: () => void
+  onSlugUpdated: (newSlug: string) => void
 }
 
 /**
@@ -19,8 +23,16 @@ interface Props {
  * slug customization come in a later iteration; the structure is kept
  * loose so we can add tabs without rebuilding.
  */
-export default function MyLinkModal({ bookingCode, doctorFirstName, onClose }: Props) {
-  const url = `${getPublicBaseUrl()}/p/${bookingCode}`
+export default function MyLinkModal({
+  userId,
+  bookingCode,
+  bookingSlug,
+  doctorFirstName,
+  onClose,
+  onSlugUpdated,
+}: Props) {
+  const handle = bookingSlug || bookingCode
+  const url = `${getPublicBaseUrl()}/p/${handle}`
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -79,7 +91,7 @@ export default function MyLinkModal({ bookingCode, doctorFirstName, onClose }: P
 
         {/* Body */}
         <div className="px-6 py-6 flex flex-col gap-5">
-          {/* URL block */}
+          {/* URL block — editable handle */}
           <div>
             <div
               className="text-[10px] text-text-hint uppercase tracking-[0.12em] mb-2"
@@ -87,21 +99,13 @@ export default function MyLinkModal({ bookingCode, doctorFirstName, onClose }: P
             >
               URL pública
             </div>
-            <div className="border border-gray-border bg-bg rounded-[10px] p-1 pl-3.5 flex items-center gap-2">
-              <span
-                className="flex-1 text-[12px] truncate"
-                style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}
-                title={url}
-              >
-                {url}
-              </span>
-              <button
-                onClick={handleCopy}
-                className="px-3 py-1.5 rounded-md text-[12px] font-medium cursor-pointer border border-primary bg-primary text-surface hover:bg-[#2F3C2D] transition-colors shrink-0"
-              >
-                {copied ? '¡Copiado!' : 'Copiar'}
-              </button>
-            </div>
+            <EditableBookingUrl
+              userId={userId}
+              bookingCode={bookingCode}
+              bookingSlug={bookingSlug}
+              variant="modal"
+              onSlugUpdated={onSlugUpdated}
+            />
             <p className="text-[12px] text-text-hint mt-2 leading-[1.55]">
               Cualquier paciente con este link puede ver tu agenda y reservar un turno solo, sin registrarse.
             </p>

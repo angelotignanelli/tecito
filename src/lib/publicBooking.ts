@@ -17,6 +17,7 @@ export interface PublicDoctor {
   session_duration: number
   price_particular: number
   booking_code: string
+  booking_slug: string | null
   avatar_url: string | null
 }
 
@@ -26,12 +27,17 @@ export interface DaySlots {
   slots: string[]
 }
 
-export async function getDoctorByBookingCode(code: string): Promise<PublicDoctor | null> {
+// Public profile lookup — accepts either the random `booking_code` (legacy
+// 8-char hex like `7c2b7d05`) or the human `booking_slug` (e.g.
+// `angelo-tignanelli`). Both columns are UNIQUE, so we can resolve in a
+// single round-trip with `.or()`. We keep old codes valid forever to avoid
+// dead-link breakage from anything already shared in WhatsApp / emails.
+export async function getDoctorByBookingCode(codeOrSlug: string): Promise<PublicDoctor | null> {
   const { data } = await supabase
     .from('profiles')
-    .select('id, first_name, last_name, specialty, license, bio, phone, email, address, city, work_days, work_from, work_to, session_duration, price_particular, booking_code, avatar_url')
-    .eq('booking_code', code)
-    .single()
+    .select('id, first_name, last_name, specialty, license, bio, phone, email, address, city, work_days, work_from, work_to, session_duration, price_particular, booking_code, booking_slug, avatar_url')
+    .or(`booking_code.eq.${codeOrSlug},booking_slug.eq.${codeOrSlug}`)
+    .maybeSingle()
   return data
 }
 
@@ -292,7 +298,11 @@ export async function createBooking(req: BookingRequest): Promise<{ success: boo
         email: req.email || null,
         dni: req.dni,
         insurance: req.insurance || 'Particular',
-        since: `Paciente desde ${new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}`,
+        // `since` is a value, not a sentence — UI templates prepend
+        // "desde " themselves. Storing "Paciente desde mayo de 2026"
+        // produced "— · desde Paciente desde mayo de 2026" in the
+        // detail panel. Match the format AddPatientModal already uses.
+        since: new Date().toLocaleDateString('es-AR', { month: 'short', year: 'numeric' }),
         total_sessions: 0,
         tags: [],
       })
