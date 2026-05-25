@@ -13,6 +13,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
+import { createHash } from 'node:crypto'
 
 const MP_ACCESS_TOKEN = (process.env.MP_ACCESS_TOKEN ?? '').trim()
 const MP_PLAN_ID_PRO = (process.env.MP_PLAN_ID_PRO ?? '').trim()
@@ -209,11 +210,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`reactivation (no trial) for user ${userId}, plan ${planId}`)
   }
 
+  // Idempotency key — same (user + plan + card token) hash always
+  // produces the same value, so if the client retries this endpoint
+  // after a timeout (POST in-flight when network dropped) MP returns
+  // the same preapproval instead of creating a duplicate one. Card
+  // tokens are single-use from MP's side anyway, which bounds the
+  // collision window to a sane interval. SHA-256 truncated to 36
+  // chars to fit MP's recommended UUID-ish format.
+  const idempotencyKey = createHash('sha256')
+    .update(`${userId!}:${planId}:${cardToken}`)
+    .digest('hex')
+    .slice(0, 36)
+
   const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
       'Content-Type': 'application/json',
+      'X-Idempotency-Key': idempotencyKey,
     },
     body: JSON.stringify(createBody),
   })

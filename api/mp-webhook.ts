@@ -118,6 +118,39 @@ function planFromReason(reason: string): 'pro' | 'clinic' | null {
 }
 
 // ────────────────────────────────────────────────────────────────
+// Audit helper
+// ────────────────────────────────────────────────────────────────
+
+interface BillingEventRow {
+  user_id: string | null
+  event_type: string
+  mp_resource_id: string
+  mp_resource_type: 'preapproval' | 'payment'
+  amount?: number | null
+  currency?: string | null
+  status: string | null
+  raw_payload: Record<string, unknown>
+  source: 'webhook' | 'api' | 'manual'
+}
+
+/**
+ * Insert a billing event with webhook-retry dedup. The migration
+ * 20260525210000_billing_events_dedupe.sql created a partial unique index
+ * on (mp_resource_id, event_type) WHERE source='webhook' — so MP
+ * redelivering the same notification collapses to a single audit row.
+ * For other sources (api, manual) no conflict is possible because the
+ * index doesn't cover them.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function recordEvent(db: any, row: BillingEventRow) {
+  const { error } = await db.from('billing_events').upsert(row, {
+    onConflict: 'mp_resource_id,event_type',
+    ignoreDuplicates: true,
+  })
+  if (error) console.error('billing_events upsert failed', error)
+}
+
+// ────────────────────────────────────────────────────────────────
 // Handlers
 // ────────────────────────────────────────────────────────────────
 
@@ -183,7 +216,7 @@ async function handlePreapproval(preapprovalId: string) {
       '[mp-webhook] preapproval.' + status + ' on terminal subscription — ignoring',
       { userId, currentPlan, currentStatus, preapprovalId: pre.id },
     )
-    await admin().from('billing_events').insert({
+    await recordEvent(admin(), {
       user_id: userId,
       event_type: `preapproval.${status}.ignored_terminal`,
       mp_resource_id: pre.id,
@@ -206,7 +239,7 @@ async function handlePreapproval(preapprovalId: string) {
       userId,
       preapprovalId: pre.id,
     })
-    await admin().from('billing_events').insert({
+    await recordEvent(admin(), {
       user_id: userId,
       event_type: 'preapproval.pending',
       mp_resource_id: pre.id,
@@ -242,7 +275,7 @@ async function handlePreapproval(preapprovalId: string) {
       status,
       preapprovalId: pre.id,
     })
-    await admin().from('billing_events').insert({
+    await recordEvent(admin(), {
       user_id: userId,
       event_type: `preapproval.${status}`,
       mp_resource_id: pre.id,
@@ -267,7 +300,7 @@ async function handlePreapproval(preapprovalId: string) {
   const { error } = await admin().from('profiles').update(update).eq('id', userId)
   if (error) console.error('profile update failed', error)
 
-  await admin().from('billing_events').insert({
+  await recordEvent(admin(), {
     user_id: userId,
     event_type: `preapproval.${status}`,
     mp_resource_id: pre.id,
@@ -368,7 +401,7 @@ async function handlePayment(paymentId: string) {
     }
   }
 
-  await admin().from('billing_events').insert({
+  await recordEvent(admin(), {
     user_id: userId,
     event_type: `payment.${pay.status}`,
     mp_resource_id: String(pay.id),
