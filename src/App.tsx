@@ -28,6 +28,7 @@ import JoinOrgView from './components/org/JoinOrgView'
 import CreateOrgModal from './components/org/CreateOrgModal'
 import OnboardingWizard from './components/onboarding/OnboardingWizard'
 import PublicBookingPage from './components/public/PublicBookingPage'
+import CancelBookingPage from './components/public/CancelBookingPage'
 import NotFoundView from './components/public/NotFoundView'
 import Icon from './components/Icon'
 import Btn from './components/Btn'
@@ -38,7 +39,7 @@ import MyLinkModal from './components/share/MyLinkModal'
 import MyLinkSection from './components/share/MyLinkSection'
 import ErrorBoundary from './components/ErrorBoundary'
 
-type AuthScreen = 'loading' | 'landing' | 'login' | 'register' | 'reset-password' | 'onboarding' | 'join-org' | 'app' | 'public-booking' | 'not-found'
+type AuthScreen = 'loading' | 'landing' | 'login' | 'register' | 'reset-password' | 'onboarding' | 'join-org' | 'app' | 'public-booking' | 'cancel-booking' | 'not-found'
 
 /** Map an unauthenticated URL path to the screen the user should see. Used
  * both on initial mount and on browser back/forward (popstate). */
@@ -55,6 +56,7 @@ export default function App() {
   const [userLastName, setUserLastName] = useState('')
   const [pendingInvite, setPendingInvite] = useState<string | null>(null)
   const [publicBookingCode, setPublicBookingCode] = useState<string | null>(null)
+  const [cancelToken, setCancelToken] = useState<string | null>(null)
 
   useEffect(() => {
     const pathname = window.location.pathname
@@ -70,6 +72,16 @@ export default function App() {
     // Any other /p/* shape (wrong length / invalid chars) is a public 404.
     if (/^\/p(\/|$)/.test(pathname)) {
       setAuthScreen('not-found')
+      return
+    }
+
+    // Detect cancellation URL: /cancel/:token. The token is an opaque
+    // base64url-encoded payload + signature joined by a dot — accept any
+    // shape and let the endpoint reject if it's malformed/expired.
+    const cancelMatch = pathname.match(/^\/cancel\/(.+?)\/?$/)
+    if (cancelMatch) {
+      setCancelToken(decodeURIComponent(cancelMatch[1]))
+      setAuthScreen('cancel-booking')
       return
     }
 
@@ -235,6 +247,10 @@ export default function App() {
 
   if (authScreen === 'public-booking' && publicBookingCode) {
     return <PublicBookingPage bookingCode={publicBookingCode} />
+  }
+
+  if (authScreen === 'cancel-booking' && cancelToken) {
+    return <CancelBookingPage token={cancelToken} />
   }
 
   if (authScreen === 'not-found') {

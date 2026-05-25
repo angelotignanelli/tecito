@@ -89,7 +89,7 @@ export function BookingConfirmation() {
 
       <CtaRow>
         <PrimaryCta href={'{{viewUrl}}'}>Ver mi turno</PrimaryCta>
-        <SecondaryCta href={'{{cancelMailto}}'}>No voy a poder ir</SecondaryCta>
+        <SecondaryCta href={'{{cancelUrl}}'}>No voy a poder ir</SecondaryCta>
       </CtaRow>
 
       {/* The footer message is injected via {{footerMessage}} in _layout. The

@@ -18,6 +18,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { createHmac } from 'node:crypto'
 
 // ─── Inline ICS (single-event RFC 5545) ──────────────────────────────────────
 
@@ -107,6 +108,7 @@ const SUPABASE_URL = (process.env.SUPABASE_URL ?? '').trim()
 const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim()
 const RESEND_API_KEY = (process.env.RESEND_API_KEY ?? '').trim()
 const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL ?? 'https://tecito.com.ar').trim()
+const CANCEL_TOKEN_SECRET = (process.env.CANCEL_TOKEN_SECRET ?? '').trim()
 // Optional shared secret used to authenticate the Supabase DB Webhook. When
 // the env var is set, every request must carry the same value in the
 // `x-webhook-secret` header or it gets 401. Leaving it unset disables the
@@ -215,19 +217,30 @@ function esc(s: string | null | undefined): string {
     .replace(/'/g, '&#39;')
 }
 
-function buildCancelMailto(args: {
-  doctorEmail?: string | null
-  doctorFullName: string
-  patientName: string
-  dateLabel: string
-  timeLabel: string
-}): string {
-  const to = args.doctorEmail || REPLY_TO
-  const subject = encodeURIComponent(`Cancelación de turno — ${args.dateLabel} ${args.timeLabel}`)
-  const body = encodeURIComponent(
-    `Hola ${args.doctorFullName},\n\nSoy ${args.patientName} y no voy a poder asistir al turno del ${args.dateLabel} a las ${args.timeLabel} hs.\n\nGracias!`
-  )
-  return `mailto:${to}?subject=${subject}&body=${body}`
+// Generates an opaque signed token for the patient's "cancel" link.
+// Mirrors the verifyToken logic in api/cancel-booking.ts — both must keep
+// the same HMAC + base64url encoding so the round-trip works.
+function b64urlEncode(buf: Buffer): string {
+  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function buildCancelUrl(appointmentId: string): string {
+  if (!CANCEL_TOKEN_SECRET) {
+    // Fallback during local dev when the secret hasn't been wired yet: the
+    // link still goes to the cancellation page, but the page will surface
+    // an "invalid token" error rather than letting an unsigned cancel slip
+    // through. Returning the link anyway is preferable to leaving an empty
+    // href in the CTA.
+    return `${PUBLIC_SITE_URL}/cancel/missing-secret`
+  }
+  // Expire the token a generous 60 days after now so even patients booking
+  // far in advance still have a working link the day of their appointment.
+  const exp = Math.floor(Date.now() / 1000) + 60 * 24 * 60 * 60
+  const payload = JSON.stringify({ apt: appointmentId, exp })
+  const payloadB64 = b64urlEncode(Buffer.from(payload, 'utf-8'))
+  const sig = createHmac('sha256', CANCEL_TOKEN_SECRET).update(payloadB64).digest()
+  const token = `${payloadB64}.${b64urlEncode(sig)}`
+  return `${PUBLIC_SITE_URL}/cancel/${token}`
 }
 
 // ─── Request normalization ───────────────────────────────────────────────────
@@ -342,13 +355,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const patientPhoneRaw = (patient?.phone ?? '').replace(/[^0-9+]/g, '')
 
-    const cancelMailto = buildCancelMailto({
-      doctorEmail: doctor.email,
-      doctorFullName,
-      patientName: patient?.name ?? '',
-      dateLabel,
-      timeLabel,
-    })
+    const cancelUrl = buildCancelUrl(apt.id)
 
     const result = { sentToPatient: false, sentToDoctor: false }
 
@@ -364,7 +371,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         locationName,
         locationAddress,
         coverage,
-        cancelMailto,
+        cancelUrl,
         viewUrl,
         icsFilename,
         footerMessage:
