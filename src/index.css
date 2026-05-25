@@ -74,16 +74,23 @@ body {
  * pattern, modals). On mobile the main views scroll the document
  * directly so this class is largely cosmetic there — momentum and
  * rubber-band come from the browser's native document scroller.
- * webkit-overflow-scrolling stays in for older WebKit fallback. */
-.scrollbar-hide {
+ * webkit-overflow-scrolling stays in for older WebKit fallback.
+ *
+ * Declared as @utility (not plain .class) so Tailwind v4 picks it up
+ * and lets us use responsive variants like `lg:scrollbar-hide`. With
+ * plain CSS the variant prefix wouldn't generate any rules — the
+ * scrollbar would stay visible on desktop and visibly nudge the
+ * content width every time the panel overflowed. */
+@utility scrollbar-hide {
   scrollbar-width: none;          /* Firefox */
   -ms-overflow-style: none;       /* IE/Edge legacy */
   -webkit-overflow-scrolling: touch;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;                  /* Chrome/Safari */
-  width: 0;
-  height: 0;
+
+  &::-webkit-scrollbar {
+    display: none;                /* Chrome/Safari */
+    width: 0;
+    height: 0;
+  }
 }
 
 input:focus, textarea:focus, select:focus {
