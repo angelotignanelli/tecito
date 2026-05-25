@@ -160,6 +160,43 @@ async function handlePreapproval(preapprovalId: string) {
   const plan = planFromReason(pre.reason)
   const status = pre.status
 
+  // Read current state before deciding. Same reason as in handlePayment:
+  // we won't let a stale webhook for an old preapproval reanimate a
+  // subscription the user has already fully exited (manual reset, cron
+  // expiration, etc).
+  const { data: existing } = await admin()
+    .from('profiles')
+    .select('plan, plan_status')
+    .eq('id', userId)
+    .maybeSingle()
+  const currentPlan = (existing?.plan as string | null) ?? 'free'
+  const currentStatus = (existing?.plan_status as string | null) ?? 'active'
+
+  // Terminal state = user has fully moved on. Only an `authorized` event
+  // (a fresh subscription) should be able to lift them out of here. A
+  // paused/cancelled webhook for the OLD preapproval id is just trailing
+  // noise — log it and bail. Without this guard, a refund in MP would
+  // cascade into us re-creating the plan='pro' row with status='past_due'.
+  const isTerminal = currentPlan === 'free' && currentStatus === 'expired'
+  if (isTerminal && status !== 'authorized') {
+    console.warn(
+      '[mp-webhook] preapproval.' + status + ' on terminal subscription — ignoring',
+      { userId, currentPlan, currentStatus, preapprovalId: pre.id },
+    )
+    await admin().from('billing_events').insert({
+      user_id: userId,
+      event_type: `preapproval.${status}.ignored_terminal`,
+      mp_resource_id: pre.id,
+      mp_resource_type: 'preapproval',
+      amount: pre.auto_recurring.transaction_amount,
+      currency: pre.auto_recurring.currency_id,
+      status,
+      raw_payload: pre as unknown as Record<string, unknown>,
+      source: 'webhook',
+    })
+    return
+  }
+
   let planStatus: string
   let planId: string
 
