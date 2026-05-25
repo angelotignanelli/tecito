@@ -81,9 +81,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .update({
       plan: 'free',
       plan_status: 'expired',
-      // Leave mp_preapproval_id in place for audit — it's not an active sub
-      // anymore, but knowing which MP preapproval the user came from is
-      // useful when they re-subscribe (analytics, support, etc.).
+      // Clear everything that ties this row to the now-dead preapproval.
+      // We previously kept mp_preapproval_id "for audit" but that left a
+      // foot-gun: any zombie webhook for that preapproval (e.g. a refund
+      // months later) would still match this profile and risk reanimating
+      // the subscription. The dedicated guard in handlePreapproval covers
+      // the case, but defense in depth: also null the references. The
+      // billing_events row below preserves the audit trail of who they
+      // were before expiry.
+      mp_preapproval_id: null,
+      plan_valid_until: null,
     })
     .in('id', ids)
 

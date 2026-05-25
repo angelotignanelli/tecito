@@ -197,6 +197,29 @@ async function handlePreapproval(preapprovalId: string) {
     return
   }
 
+  // `pending` = MP is still validating the preapproval (card pre-check,
+  // etc). Don't touch the user's current plan — just log and bail. The
+  // old `else` branch reset plan='free'/status='active', which silently
+  // killed an in-flight upgrade if MP went through a `pending` blip.
+  if (status === 'pending') {
+    console.log('[mp-webhook] preapproval.pending — leaving profile untouched', {
+      userId,
+      preapprovalId: pre.id,
+    })
+    await admin().from('billing_events').insert({
+      user_id: userId,
+      event_type: 'preapproval.pending',
+      mp_resource_id: pre.id,
+      mp_resource_type: 'preapproval',
+      amount: pre.auto_recurring.transaction_amount,
+      currency: pre.auto_recurring.currency_id,
+      status: 'pending',
+      raw_payload: pre as unknown as Record<string, unknown>,
+      source: 'webhook',
+    })
+    return
+  }
+
   let planStatus: string
   let planId: string
 
@@ -210,8 +233,27 @@ async function handlePreapproval(preapprovalId: string) {
     planStatus = 'cancelled'
     planId = plan ?? 'free'
   } else {
-    planStatus = 'active'
-    planId = 'free'
+    // Any unknown future status — log and bail rather than reset. Keeps
+    // us safe against MP introducing a new lifecycle state we don't
+    // recognize yet (the old default was active+free, which masked
+    // anything weird as a downgrade).
+    console.warn('[mp-webhook] unknown preapproval status — ignoring', {
+      userId,
+      status,
+      preapprovalId: pre.id,
+    })
+    await admin().from('billing_events').insert({
+      user_id: userId,
+      event_type: `preapproval.${status}`,
+      mp_resource_id: pre.id,
+      mp_resource_type: 'preapproval',
+      amount: pre.auto_recurring.transaction_amount,
+      currency: pre.auto_recurring.currency_id,
+      status,
+      raw_payload: pre as unknown as Record<string, unknown>,
+      source: 'webhook',
+    })
+    return
   }
 
   const update: Record<string, unknown> = {
@@ -245,11 +287,15 @@ async function handlePayment(paymentId: string) {
   let userId = pay.external_reference ?? null
   const preId = pay.metadata?.preapproval_id
   if (!userId && preId) {
+    // .maybeSingle() instead of .single() — single() throws on 0 rows
+    // (e.g. payment metadata references a preapproval that isn't tied to
+    // any current profile, like a dev simulator hit or a stale id) which
+    // would also short-circuit the billing_events insert below.
     const { data } = await admin()
       .from('profiles')
       .select('id')
       .eq('mp_preapproval_id', preId)
-      .single()
+      .maybeSingle()
     userId = data?.id ?? null
   }
 
@@ -282,11 +328,35 @@ async function handlePayment(paymentId: string) {
         { userId, currentStatus, paymentId: pay.id },
       )
     } else {
-      const nextMonth = new Date()
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
+      // Use the REAL next_payment_date from MP's preapproval when we can,
+      // not a JS +30d. A retried cobro (MP recovered after past_due, charge
+      // succeeded N days late) would otherwise produce a drifted cycle.
+      // We still need the preapproval id to fetch — get it from the
+      // payment metadata, or fall back to the profile we just resolved.
+      let nextChargeIso: string | null = null
+      const preIdForLookup =
+        pay.metadata?.preapproval_id ||
+        (userId
+          ? ((
+              await admin()
+                .from('profiles')
+                .select('mp_preapproval_id')
+                .eq('id', userId)
+                .maybeSingle()
+            ).data?.mp_preapproval_id as string | null) || null
+          : null)
+      if (preIdForLookup) {
+        const pre = await mpGet<MPPreapproval>(`/preapproval/${preIdForLookup}`)
+        nextChargeIso = pre?.next_payment_date ?? null
+      }
+      if (!nextChargeIso) {
+        const nextMonth = new Date()
+        nextMonth.setMonth(nextMonth.getMonth() + 1)
+        nextChargeIso = nextMonth.toISOString()
+      }
       await admin()
         .from('profiles')
-        .update({ plan_valid_until: nextMonth.toISOString(), plan_status: 'active' })
+        .update({ plan_valid_until: nextChargeIso, plan_status: 'active' })
         .eq('id', userId)
     }
   } else if ((pay.status === 'rejected' || pay.status === 'refunded') && userId) {
@@ -363,7 +433,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       topic: body.type ?? qTopic,
       dataId,
     })
-    // Accept anyway during debug; handler reads from MP API so body is advisory.
+    // Reject. Without the secret an attacker can forge `data.id` values to
+    // trigger our handlers — and even though we re-fetch from MP (so they
+    // can't inject crafted state), they could DoS the endpoint and burn
+    // through our MP_ACCESS_TOKEN rate limits. We only short-circuit when
+    // MP_WEBHOOK_SECRET is configured: in local dev without the secret,
+    // verifySignature() returns true and this branch never runs.
+    return res.status(401).send('invalid signature')
   }
 
   const topic = body.type ?? body.action ?? qTopic
