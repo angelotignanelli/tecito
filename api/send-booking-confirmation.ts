@@ -346,10 +346,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const coverage = patient?.insurance || '—'
 
     const dateCompact = apt.date.replace(/-/g, '')
+    // icsFilename is what the recipient sees when their mail client lists
+    // the real attachment at the bottom of the message — we no longer show
+    // a mock card for it inside the body.
     const icsFilename = `turno-${dateCompact}.ics`
-    const viewUrl = doctor.booking_code
-      ? `${PUBLIC_SITE_URL}/p/${doctor.booking_code}`
-      : PUBLIC_SITE_URL
     const panelUrl = `${PUBLIC_SITE_URL}/?date=${apt.date}`
     const reschedulePath = `${panelUrl}#turno-${apt.id}`
 
@@ -372,8 +372,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         locationAddress,
         coverage,
         cancelUrl,
-        viewUrl,
-        icsFilename,
         footerMessage:
           'Reservaste un turno con un profesional que usa Tecito. Si tenés una duda médica, escribíle directamente al consultorio. Para todo lo demás, contestá este mail.',
       })

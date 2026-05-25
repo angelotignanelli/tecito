@@ -8,23 +8,27 @@
 //   - Heading "Te esperamos el {{dateLabel}}." (date in italic sage)
 //   - Greeting + doctor name + .ics mention
 //   - Info card (Cuándo / Dónde / Cobertura)
-//   - Visual attachment card for the .ics
-//   - Dual CTAs: "Ver mi turno" + "No voy a poder ir"
+//   - Single sober ghost link to the cancellation flow
+//
+// We intentionally don't include a "Ver mi turno" primary CTA — the patient
+// can already see everything they need in this email; sending them to the
+// doctor's public booking page would just confuse them into booking again.
+// We also don't include a visual .ics attachment card, since Gmail / Apple
+// Mail surface the real attachment at the bottom of the message by default,
+// and a non-clickable mock card on top of that adds noise.
 
 import * as React from 'react'
+import { Text } from '@react-email/components'
 import {
-  AttachmentCard,
   BigHour,
   BodyText,
-  CtaRow,
+  COLORS,
   Eyebrow,
+  FONTS,
   Heading,
   InfoCard,
   InfoRow,
-  InlineLink,
   Italic,
-  PrimaryCta,
-  SecondaryCta,
   Strong,
   Sub,
   EmailLayout,
@@ -42,8 +46,7 @@ export function BookingConfirmation() {
 
       <BodyText>
         Hola <Strong>{'{{patientFirstName}}'}</Strong>, reservaste un turno con{' '}
-        <Strong>{'{{doctorFullName}}'}</Strong>. Te dejamos todo lo que necesitás
-        abajo — y un archivo{' '}
+        <Strong>{'{{doctorFullName}}'}</Strong>. Adjuntamos un archivo{' '}
         <code
           style={{
             fontFamily: '"Geist Mono", Menlo, Consolas, monospace',
@@ -56,7 +59,8 @@ export function BookingConfirmation() {
         >
           .ics
         </code>{' '}
-        para que lo agendes en un toque.
+        para que lo agendes en tu calendario en un toque — con recordatorios
+        24 h y 2 h antes.
       </BodyText>
 
       <InfoCard>
@@ -82,21 +86,30 @@ export function BookingConfirmation() {
         <InfoRow label="Cobertura" value={'{{coverage}}'} />
       </InfoCard>
 
-      <AttachmentCard
-        filename={'{{icsFilename}}'}
-        meta="Recordatorios 24 h y 2 h antes"
-      />
-
-      <CtaRow>
-        <PrimaryCta href={'{{viewUrl}}'}>Ver mi turno</PrimaryCta>
-        <SecondaryCta href={'{{cancelUrl}}'}>No voy a poder ir</SecondaryCta>
-      </CtaRow>
-
-      {/* The footer message is injected via {{footerMessage}} in _layout. The
-          serverless function passes a context-specific string for each template. */}
-      <span style={{ display: 'none' }}>
-        <InlineLink href="mailto:hola@tecito.com.ar">hola@tecito.com.ar</InlineLink>
-      </span>
+      <Text
+        style={{
+          fontFamily: FONTS.sans,
+          fontSize: 14,
+          color: COLORS.textMuted,
+          margin: '32px 0 0',
+          lineHeight: 1.5,
+        }}
+      >
+        ¿No vas a poder venir?{' '}
+        <a
+          href="{{cancelUrl}}"
+          style={{
+            color: COLORS.primary,
+            textDecoration: 'underline',
+            textUnderlineOffset: 3,
+            textDecorationColor: 'rgba(59,74,56,0.3)',
+            fontWeight: 500,
+          }}
+        >
+          Cancelar este turno
+        </a>{' '}
+        — le avisamos al profesional para que pueda liberar el horario.
+      </Text>
     </EmailLayout>
   )
 }
