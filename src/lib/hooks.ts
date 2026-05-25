@@ -671,6 +671,90 @@ export function useLocations(userId: string | null) {
   return { locations, loading, refetch: fetch, add, update, remove, setPrimary }
 }
 
+// ============ LOCATION SCHEDULES ============
+//
+// Each location can have N time ranges (mañana / tarde / sábado-aparte / etc).
+// Persisted in `location_schedules`. The editor loads, mutates and replaces
+// the full list per location — replacing is simpler than diffing add/edit/delete
+// and the row count per location is tiny (typically 1-3 ranges).
+
+export interface ScheduleRow {
+  id: string
+  location_id: string
+  days: string[]
+  from_time: string  // "HH:MM:SS" coming back from Postgres
+  to_time: string
+  position: number
+}
+
+/** Draft shape used by the editor — no id yet for new rows, times are HH:MM. */
+export interface ScheduleDraft {
+  days: string[]
+  from_time: string  // HH:MM
+  to_time: string    // HH:MM
+}
+
+export function useLocationSchedules(userId: string | null) {
+  const [byLocation, setByLocation] = useState<Map<string, ScheduleRow[]>>(new Map())
+  const [loading, setLoading] = useState(true)
+
+  const fetch = useCallback(async () => {
+    if (!userId) return
+    // Pull every schedule owned by every location of this doctor in one
+    // shot using a join to keep the SELECT under RLS. Could also do a
+    // .in(...) with a precomputed location id list — this is fewer
+    // round-trips.
+    const { data } = await supabase
+      .from('location_schedules')
+      .select('id, location_id, days, from_time, to_time, position, locations!inner(doctor_id)')
+      .eq('locations.doctor_id', userId)
+      .order('position')
+
+    const map = new Map<string, ScheduleRow[]>()
+    for (const row of (data ?? []) as unknown as ScheduleRow[]) {
+      const list = map.get(row.location_id) ?? []
+      list.push(row)
+      map.set(row.location_id, list)
+    }
+    setByLocation(map)
+    setLoading(false)
+  }, [userId])
+
+  useEffect(() => { fetch() }, [fetch])
+
+  /**
+   * Replace every schedule row for `locationId` with `drafts`. Done as a
+   * delete-then-insert pair rather than a UPSERT diff — the editor edits
+   * the full set as a unit and N is small, so the simpler write wins.
+   * Returns the supabase error on failure (null on success).
+   */
+  const replaceForLocation = async (locationId: string, drafts: ScheduleDraft[]) => {
+    const { error: delErr } = await supabase
+      .from('location_schedules')
+      .delete()
+      .eq('location_id', locationId)
+    if (delErr) return delErr
+
+    if (drafts.length === 0) {
+      await fetch()
+      return null
+    }
+
+    const rows = drafts.map((d, idx) => ({
+      location_id: locationId,
+      days: d.days,
+      from_time: d.from_time,
+      to_time: d.to_time,
+      position: idx,
+    }))
+    const { error: insErr } = await supabase.from('location_schedules').insert(rows)
+    if (!insErr) await fetch()
+    return insErr
+  }
+
+  return { byLocation, loading, refetch: fetch, replaceForLocation }
+}
+
 /** Public fetch of a doctor's locations by their id — used on the public booking page. */
 export async function getPublicLocations(doctorId: string): Promise<LocationRow[]> {
   const { data } = await supabase

@@ -94,6 +94,75 @@ export async function getPublicDoctorLocations(doctorId: string): Promise<Public
   return (data as PublicLocation[]) || []
 }
 
+// A single contiguous work range — what a location_schedules row represents.
+// We resolve every consultorio down to a list of these before generating slots.
+interface WorkRange {
+  days: string[]
+  startMin: number
+  endMin: number
+}
+
+function parseHM(hm: string | null | undefined, fallback: string): number {
+  const [h, m] = String(hm || fallback).slice(0, 5).split(':').map(Number)
+  return (h || 0) * 60 + (m || 0)
+}
+
+/**
+ * Fetch the time ranges that apply to a given location, falling back to the
+ * legacy single-range columns when no `location_schedules` row exists yet
+ * (transitional state during the multi-range rollout). If `locationId` is
+ * null we use the profile-level work_* fields as a last resort, mirroring
+ * the legacy behavior for accounts that never created a consultorio row.
+ */
+async function fetchWorkRanges(
+  doctorId: string,
+  locationId: string | null | undefined,
+  profile: { work_days: string[] | null; work_from: string | null; work_to: string | null },
+): Promise<WorkRange[]> {
+  if (locationId) {
+    // Prefer the normalized table — N rows per location, one per franja.
+    const { data: schedules } = await supabase
+      .from('location_schedules')
+      .select('days, from_time, to_time, position')
+      .eq('location_id', locationId)
+      .order('position')
+
+    if (schedules && schedules.length > 0) {
+      return schedules
+        .map((s) => ({
+          days: s.days || [],
+          startMin: parseHM(s.from_time, '09:00'),
+          endMin: parseHM(s.to_time, '18:00'),
+        }))
+        .filter((r) => r.endMin > r.startMin)
+    }
+
+    // Fallback for the transition window: read the old single range off
+    // the parent row. Will go away once every location has been edited
+    // at least once through the new editor.
+    const { data: loc } = await supabase
+      .from('locations')
+      .select('work_days, work_from, work_to')
+      .eq('id', locationId)
+      .single()
+    if (loc && loc.work_from && loc.work_to) {
+      return [{
+        days: loc.work_days || ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
+        startMin: parseHM(loc.work_from, '09:00'),
+        endMin: parseHM(loc.work_to, '18:00'),
+      }]
+    }
+    return []
+  }
+
+  // No location specified — legacy profile-level config.
+  return [{
+    days: profile.work_days || ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
+    startMin: parseHM(profile.work_from, '09:00'),
+    endMin: parseHM(profile.work_to, '18:00'),
+  }]
+}
+
 export async function getAvailableSlotsRange(doctorId: string, daysAhead = 14, locationId?: string | null): Promise<DaySlots[]> {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -102,7 +171,8 @@ export async function getAvailableSlotsRange(doctorId: string, daysAhead = 14, l
   endDate.setDate(endDate.getDate() + daysAhead)
   const toISO = toLocalISO(endDate)
 
-  // Get doctor config (session duration fallback)
+  // Profile carries the session duration + the legacy fallback range used
+  // when neither a location nor a schedule row is available.
   const { data: profile } = await supabase
     .from('profiles')
     .select('work_days, work_from, work_to, session_duration')
@@ -110,20 +180,8 @@ export async function getAvailableSlotsRange(doctorId: string, daysAhead = 14, l
     .single()
   if (!profile) return []
 
-  // Get the location to use (the specified one, or the primary)
-  let locationConfig: { work_days: string[]; work_from: string | null; work_to: string | null } = {
-    work_days: profile.work_days || ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
-    work_from: profile.work_from,
-    work_to: profile.work_to,
-  }
-  if (locationId) {
-    const { data: loc } = await supabase
-      .from('locations')
-      .select('work_days, work_from, work_to')
-      .eq('id', locationId)
-      .single()
-    if (loc) locationConfig = loc
-  }
+  const ranges = await fetchWorkRanges(doctorId, locationId, profile)
+  if (ranges.length === 0) return []
 
   // Get booked appointments for this doctor.
   // If location filter is active, only count appointments FOR THAT LOCATION — so two
@@ -161,13 +219,7 @@ export async function getAvailableSlotsRange(doctorId: string, daysAhead = 14, l
     bookedByDate[key].add(String(a.time).slice(0, 5))
   }
 
-  const workDays = locationConfig.work_days || ['Lun', 'Mar', 'Mié', 'Jue', 'Vie']
   const duration = profile.session_duration || 50
-  const [startH, startM] = String(locationConfig.work_from || '09:00').slice(0, 5).split(':').map(Number)
-  const [endH, endM] = String(locationConfig.work_to || '18:00').slice(0, 5).split(':').map(Number)
-  const startMin = startH * 60 + startM
-  const endMin = endH * 60 + endM
-
   const result: DaySlots[] = []
   const now = new Date()
   const nowMin = now.getHours() * 60 + now.getMinutes()
@@ -179,24 +231,35 @@ export async function getAvailableSlotsRange(doctorId: string, daysAhead = 14, l
     const iso = d.toISOString().split('T')[0]
 
     if (blockedDates.has(iso)) continue
-    if (!workDays.includes(dayMap[d.getDay()])) continue
+    const weekday = dayMap[d.getDay()]
 
+    // Walk every range that covers this weekday and emit slots inside it.
+    // Two ranges of the same day (Lun 9-13 + Lun 16-20) will both
+    // contribute their slots; we de-dupe by time at the end in case the
+    // doctor accidentally overlapped them in the editor.
+    const seen = new Set<string>()
+    const dailySlots: string[] = []
     const booked = bookedByDate[iso] || new Set()
-    const slots: string[] = []
 
-    for (let m = startMin; m + duration <= endMin; m += duration) {
-      // Skip past times today
-      if (iso === todayStr && m <= nowMin + 30) continue
-      const h = Math.floor(m / 60)
-      const mn = m % 60
-      const time = `${String(h).padStart(2, '0')}:${String(mn).padStart(2, '0')}`
-      if (!booked.has(time)) {
-        slots.push(time)
+    for (const range of ranges) {
+      if (!range.days.includes(weekday)) continue
+      for (let m = range.startMin; m + duration <= range.endMin; m += duration) {
+        if (iso === todayStr && m <= nowMin + 30) continue
+        const h = Math.floor(m / 60)
+        const mn = m % 60
+        const time = `${String(h).padStart(2, '0')}:${String(mn).padStart(2, '0')}`
+        if (booked.has(time)) continue
+        if (seen.has(time)) continue
+        seen.add(time)
+        dailySlots.push(time)
       }
     }
 
-    if (slots.length > 0) {
-      result.push({ date: iso, dayLabel: formatDayLabel(d), slots })
+    if (dailySlots.length > 0) {
+      // Sort: ranges might be entered out of order (tarde first, mañana
+      // second). Slot picker expects ascending time.
+      dailySlots.sort()
+      result.push({ date: iso, dayLabel: formatDayLabel(d), slots: dailySlots })
     }
   }
 
