@@ -57,7 +57,7 @@ const SUPABASE_ANON = process.env.VITE_SUPABASE_ANON_KEY
 const SITE_NAME = 'Tecito'
 const SITE_TAGLINE = 'Turnos online y agenda para profesionales de la salud'
 const SITE_DESC =
-  'Tecito es la agenda online para médicos y psicólogos. Tus pacientes reservan turnos desde un link único, recibís recordatorios por WhatsApp y gestionás tu consultorio en un panel simple.'
+  'Tecito es la agenda online para médicos y psicólogos. Tus pacientes reservan turnos desde un link único, les llega la confirmación por mail con recordatorios automáticos y vos gestionás tu consultorio en un panel simple.'
 
 // ───────────────────────────────────────────────────────────────
 // Utilities
