@@ -30,6 +30,25 @@
     <meta name="twitter:description" content="Tus pacientes reservan desde un link único, reciben confirmación por mail con recordatorios automáticos y vos gestionás tu consultorio en un panel simple." />
     <meta name="twitter:image" content="https://panel-medico-pied.vercel.app/og-default.png" />
 
+    <!-- Meta Pixel -->
+    <!-- Dispara PageView en cada carga inicial. Para conversiones finas
+         (CompleteRegistration) el trigger está en RegisterView.tsx
+         después del signUp exitoso. El <noscript> fallback va en <body>
+         porque parse5/HTML5 no permite <img> dentro de <noscript> en el
+         <head>. -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1965328187779812');
+    fbq('track', 'PageView');
+    </script>
+
     <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -84,6 +103,10 @@
     </script>
   </head>
   <body>
+    <!-- Meta Pixel — fallback para navegadores con JS deshabilitado -->
+    <noscript><img height="1" width="1" style="display:none" alt=""
+    src="https://www.facebook.com/tr?id=1965328187779812&ev=PageView&noscript=1"
+    /></noscript>
     <div id="root"></div>
     <!-- MercadoPago JS SDK. Loaded on every page so /planes can open the
          Card Payment Brick without a round-trip delay. ~30kB gzipped. -->

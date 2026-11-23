@@ -58,6 +58,17 @@ export default function RegisterView({ onRegisterSuccess, onGoToLogin }: Props) 
       setError(error.message)
       return
     }
+
+    // Meta Pixel — CompleteRegistration. El algoritmo de Meta usa este
+    // evento para optimizar la campaña de validación: le dice "esta
+    // visita convirtió a signup". NO pasamos email ni datos personales;
+    // Meta identifica al usuario por cookie de Facebook. Es un no-op en
+    // navegadores que bloquearon el pixel o si window.fbq no cargó.
+    const w = window as unknown as { fbq?: (...args: unknown[]) => void }
+    if (typeof w.fbq === 'function') {
+      try { w.fbq('track', 'CompleteRegistration') } catch { /* no-op */ }
+    }
+
     setStep('verify')
   }
 
